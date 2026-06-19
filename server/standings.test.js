@@ -40,6 +40,26 @@ describe('advancementStatus (mid-group)', () => {
     const out = advancementStatus(ranked);
     // c/d max reachable = 4; a and b already have 6 > 4 -> out
     expect(out.find((r) => r.team.id === 'c').status).toBe('out');
+    expect(out.find((r) => r.team.id === 'a').status).toBe('through');
+    expect(out.find((r) => r.team.id === 'b').status).toBe('through');
+  });
+
+  it('marks a team as alive when outcome is still uncertain', () => {
+    // a has 6pts (clinched), b has 3pts, c has 1pt, d has 0pt; all played 2 of 3
+    // maxReachable(b) = 3+3=6 -- still matches a; b can finish top-2: alive
+    // maxReachable(c) = 1+3=4 -- a already has 6>4: one above; b may match or beat c; c alive
+    // d maxReachable=3 -- a(6>3) and b(3 not >3 yet) -- only 1 above d -> alive
+    const ranked = rankGroup([
+      row({ id: 'a', played: 2, points: 6 }),
+      row({ id: 'b', played: 2, points: 3 }),
+      row({ id: 'c', played: 2, points: 1 }),
+      row({ id: 'd', played: 2, points: 0 }),
+    ]);
+    const out = advancementStatus(ranked);
+    expect(out.find((r) => r.team.id === 'a').status).toBe('through'); // 0 others can finish above
+    expect(out.find((r) => r.team.id === 'b').status).toBe('alive');   // a can finish above, not 2 others yet
+    expect(out.find((r) => r.team.id === 'c').status).toBe('alive');   // only a exceeds c's max(4)
+    expect(out.find((r) => r.team.id === 'd').status).toBe('alive');   // only a exceeds d's max(3)
   });
 });
 
