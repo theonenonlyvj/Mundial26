@@ -1,0 +1,29 @@
+import { describe, it, expect } from 'vitest';
+import request from 'supertest';
+import express from 'express';
+import { buildRouter } from './routes.js';
+
+const fakeService = {
+  getMatches: async () => ({ updatedAt: null, stale: true, matches: [{ id: 1 }] }),
+  getStandings: async () => ({ updatedAt: null, stale: true, groups: [], bestThirdIds: [] }),
+  getScorers: async () => ({ updatedAt: null, stale: true, scorers: [] }),
+};
+
+function app() {
+  const a = express();
+  a.use('/api', buildRouter(fakeService));
+  return a;
+}
+
+describe('api routes', () => {
+  it('GET /api/matches returns matches', async () => {
+    const res = await request(app()).get('/api/matches');
+    expect(res.status).toBe(200);
+    expect(res.body.matches).toEqual([{ id: 1 }]);
+  });
+  it('GET /api/standings returns groups', async () => {
+    const res = await request(app()).get('/api/standings');
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('bestThirdIds');
+  });
+});
