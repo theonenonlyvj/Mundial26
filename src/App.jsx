@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './theme/global.css';
+import TodayView from './views/TodayView.jsx';
 
 const VIEWS = [
   { key: 'today', label: 'Today' },
@@ -27,7 +28,7 @@ export default function App() {
         </nav>
       </header>
       <main className="app__main">
-        {view === 'today' && <section aria-label="Today">Today (coming in Plan 2)</section>}
+        {view === 'today' && <TodayView />}
         {view === 'timeline' && <section aria-label="Timeline">Timeline (coming in Plan 2)</section>}
         {view === 'map' && <section aria-label="Map">Map (coming in Plan 2)</section>}
         {view === 'standings' && <section aria-label="Standings">Standings (coming in Plan 2)</section>}
