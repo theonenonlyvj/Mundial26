@@ -9,5 +9,7 @@ describe('AdvancementBadge', () => {
     expect(screen.getByText(/Through/)).toBeInTheDocument();
     rerender(<AdvancementBadge status="out" />);
     expect(screen.getByText(/Out/)).toBeInTheDocument();
+    rerender(<AdvancementBadge status="alive" />);
+    expect(screen.getByText(/Alive/)).toBeInTheDocument();
   });
 });

@@ -1,18 +1,21 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, act } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import App from './App.jsx';
 
+beforeEach(() => vi.stubGlobal('fetch', async () => ({ ok: true, json: async () => ({ matches: [] }) })));
+afterEach(() => vi.restoreAllMocks());
+
 describe('App', () => {
-  it('renders the brand', () => {
-    render(<App />);
+  it('renders the brand', async () => {
+    await act(async () => { render(<App />); });
     expect(screen.getByRole('banner')).toHaveTextContent('Mundial26');
   });
-});
 
-it('switches views via nav', () => {
-  render(<App />);
-  fireEvent.click(screen.getByRole('button', { name: 'Standings' }));
-  expect(screen.getByRole('region', { name: /standings/i })).toBeInTheDocument();
+  it('switches views via nav', async () => {
+    await act(async () => { render(<App />); });
+    fireEvent.click(screen.getByRole('button', { name: 'Standings' }));
+    expect(screen.getByRole('region', { name: /standings/i })).toBeInTheDocument();
+  });
 });
