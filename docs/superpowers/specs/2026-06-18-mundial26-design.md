@@ -26,6 +26,20 @@ This is **not** a live-score ticker. Data is fetched and cached periodically; th
 - No native/mobile app — responsive web only.
 - No multi-tournament support — World Cup 2026 only.
 
+## 2.5 Guiding Principle: Exciting for Someone New to Soccer
+
+This is the **north-star requirement**, not a single feature. Every view is designed so a person who has never watched soccer feels oriented and *excited* — never lost. It is a review criterion for each view. Concretely:
+
+- **Stakes over stats.** Lead with what a result *means* ("This win sent Mexico through to the knockout rounds"), not raw numbers. Every table and match answers "so what?" in plain English.
+- **No unexplained jargon.** Terms like *group stage*, *goal difference*, *knockout*, *draw*, *aggregate* never appear bare — each has a tap/hover plain-English definition, and a short glossary is always one tap away.
+- **"What to watch" guidance.** The Today view highlights the single most exciting match of the day and *why* it matters (a group decider, a must-win, a rivalry, an upset brewing).
+- **Story framing.** Automatically surface drama: upsets, must-win matches, teams on the brink, groups still wide open. Newcomers are hooked by stories and stakes, not tables.
+- **Visual-first.** Flags, colors, and stickers carry the meaning; numbers are secondary and always labeled. The through / alive / out color-coding is consistent everywhere and always has a legend.
+- **Delightful onboarding.** The "How it works" album intro is a warm, illustrated ~30-second read (skippable), not a rulebook — reopenable anytime from a persistent "New to soccer? Start here" entry point.
+- **Collectible momentum.** The sticker-album metaphor itself makes following along feel like collecting and completing — intrinsically engaging without requiring any soccer knowledge.
+
+These principles are realized through the mechanisms in §7 (Explainer Layer) and the design system in §8.
+
 ## 3. Users
 
 1. **The casual/newcomer viewer** — doesn't know soccer; wants to understand what's happening and feel the excitement. Primary audience for the explainer layer.
