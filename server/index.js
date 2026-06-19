@@ -1,4 +1,4 @@
-import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import express from 'express';
 import { loadConfig } from './config.js';
 import { createDataService } from './dataService.js';
@@ -10,18 +10,23 @@ export function createApp({ dataService } = {}) {
   if (dataService) app.use('/api', buildRouter(dataService));
 
   if (process.env.NODE_ENV === 'production') {
-    const dist = path.resolve('dist');
+    const dist = new URL('../dist', import.meta.url).pathname;
     app.use(express.static(dist));
-    app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
+    app.use('/api', (_req, res) => res.status(404).json({ error: 'not_found' }));
+    app.get('*', (_req, res) => res.sendFile(`${dist}/index.html`));
   }
   return app;
 }
 
-const isMain = import.meta.url === `file://${process.argv[1]}`;
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 if (isMain) {
   const config = loadConfig();
   const dataService = createDataService({ config });
-  createApp({ dataService }).listen(config.port, () => {
+  const server = createApp({ dataService }).listen(config.port, () => {
     console.log(`Mundial26 server on :${config.port} (api ${config.apiKey ? 'live' : 'snapshot'})`);
+  });
+  server.on('error', (err) => {
+    console.error('Server failed to start:', err.message);
+    process.exit(1);
   });
 }
