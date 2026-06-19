@@ -12,7 +12,7 @@ export function createCache({ now = () => Date.now() } = {}) {
   };
 }
 
-export function createCachedFetcher({ cache, fetcher, ttlMs, now }) {  // now is accepted per spec; clock is injected via cache
+export function createCachedFetcher({ cache, fetcher, ttlMs }) {
   return async function cachedFetch(key) {
     const cached = cache.get(key);
     if (cached.hit && !cached.stale) {
