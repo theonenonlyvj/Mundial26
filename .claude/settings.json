@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(corepack *)",
+      "Bash(git *)",
+      "Bash(curl *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(hash *)",
+      "Bash(kill *)",
+      "Bash(cd *)",
+      "Bash(ls *)",
+      "Bash(echo *)",
+      "Read",
+      "Edit(**)",
+      "Write(**)"
+    ],
+    "deny": [
+      "Bash(sudo *)",
+      "Bash(rm -rf /*)"
+    ]
+  }
+}
