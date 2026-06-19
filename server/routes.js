@@ -6,7 +6,7 @@ export function buildRouter(dataService) {
     try {
       res.json(await fn());
     } catch (err) {
-      res.status(502).json({ error: 'upstream_unavailable', message: err.message });
+      res.status(502).json({ error: 'upstream_unavailable', message: err?.message ?? String(err) });
     }
   };
   router.get('/matches', send(() => dataService.getMatches()));

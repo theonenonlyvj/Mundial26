@@ -26,4 +26,17 @@ describe('api routes', () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('bestThirdIds');
   });
+  it('GET /api/scorers returns scorers', async () => {
+    const res = await request(app()).get('/api/scorers');
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('scorers');
+  });
+  it('GET /api/matches returns 502 on service error', async () => {
+    const broken = { ...fakeService, getMatches: async () => { throw new Error('boom'); } };
+    const a = express(); a.use('/api', buildRouter(broken));
+    const res = await request(a).get('/api/matches');
+    expect(res.status).toBe(502);
+    expect(res.body.error).toBe('upstream_unavailable');
+    expect(res.body.message).toBe('boom');
+  });
 });
