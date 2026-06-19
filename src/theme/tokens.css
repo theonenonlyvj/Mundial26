@@ -1,0 +1,21 @@
+:root {
+  /* Panini paper + ink */
+  --paper: #f4ecd8;
+  --paper-edge: #e7dcc0;
+  --ink: #1d2330;
+  --muted: #6b6151;
+
+  /* Foil / accent */
+  --gold: #d8b24a;
+  --gold-sheen: #f3e3a8;
+
+  /* Advancement semantics */
+  --through: #2e8b57;
+  --alive: #c8951d;
+  --out: #b23b3b;
+
+  /* Shape */
+  --sticker-radius: 14px;
+  --sticker-shadow: 0 2px 0 var(--paper-edge), 0 6px 14px rgba(0,0,0,0.18);
+  --foil-sheen: linear-gradient(135deg, var(--gold-sheen), var(--gold));
+}
