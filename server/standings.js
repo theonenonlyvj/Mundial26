@@ -48,5 +48,5 @@ export function bestThirds(rankedGroups) {
   return thirds
     .sort(compareRows)
     .slice(0, 8)
-    .map((r) => r.team.id);
+    .map((r) => String(r.team.id));
 }
