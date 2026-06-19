@@ -1,0 +1,17 @@
+.sticker {
+  background: var(--paper);
+  border-radius: var(--sticker-radius);
+  box-shadow: var(--sticker-shadow);
+  border: 2px solid var(--paper-edge);
+  padding: 12px;
+  position: relative;
+}
+.sticker--accent { border-left: 6px solid var(--accent, var(--gold)); }
+.sticker--foil::before {
+  content: ""; position: absolute; inset: 0;
+  border-radius: var(--sticker-radius);
+  padding: 2px; background: var(--foil-sheen);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;
+}
