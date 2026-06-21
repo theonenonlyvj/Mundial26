@@ -19,6 +19,7 @@ export default function GroupTable({ group }) {
             <th>Team</th>
             <th title="Played">P</th>
             <th>W</th><th>D</th><th>L</th>
+            <th title="Goals for">GF</th>
             <th><Term define={defineTerm('goalDifference')}>GD</Term></th>
             <th>Pts</th>
             <th>Status</th>
@@ -27,9 +28,13 @@ export default function GroupTable({ group }) {
         <tbody>
           {group.table.map((row) => (
             <tr key={row.team.tla ?? row.rank}>
-              <td><TeamSticker team={row.team} /></td>
+              <td>
+                <TeamSticker team={row.team} />
+                {row.note && <div className="gt__row-note">{row.note}</div>}
+              </td>
               <td>{row.played}</td>
               <td>{row.won}</td><td>{row.draw}</td><td>{row.lost}</td>
+              <td>{row.goalsFor}</td>
               <td>{row.goalDifference}</td>
               <td><strong>{row.points}</strong></td>
               <td><AdvancementBadge status={row.status} /></td>
@@ -37,7 +42,6 @@ export default function GroupTable({ group }) {
           ))}
         </tbody>
       </table>
-      {group.table[0]?.note && <div className="gt__note">Leader: {group.table[0].note}</div>}
     </StickerCard>
   );
 }

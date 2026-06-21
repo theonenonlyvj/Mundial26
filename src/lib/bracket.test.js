@@ -15,4 +15,13 @@ describe('knockoutRounds', () => {
     expect(rounds[0].matches.map((x) => x.id)).toEqual([3, 4]);
     expect(rounds[0].label).toMatch(/Round of 32/i);
   });
+
+  it('sorts within-round matches by date ascending, regardless of id order', () => {
+    // id 9 has an EARLIER date than id 2 — result must be [9, 2]
+    const rounds = knockoutRounds([
+      m(9, 'LAST_32', '2026-06-28T00:00:00Z'),
+      m(2, 'LAST_32', '2026-06-29T00:00:00Z'),
+    ]);
+    expect(rounds[0].matches.map((x) => x.id)).toEqual([9, 2]);
+  });
 });
