@@ -1,21 +1,20 @@
 # Mundial26 — Build Progress (subagent-driven execution)
 
-## Foundation — ✅ COMPLETE (branch `build/foundation`, merged to `main`)
+## Foundation — ✅ COMPLETE (merged to `main`, 41/41 tests)
+Backend data layer (cache + snapshot fallback, football-data.org client, normalize, advancement/tiebreaker logic, `/api` routes) + Panini design system + app shell + deploy config. Whole-branch review caught & fixed a Critical advancement bug (false "Through" on tiebreaker-3rd).
 
-Base `e0513c5`. All four phases implemented TDD, each reviewed; then a whole-branch review on the most capable model, which caught a Critical bug (now fixed). Full suite **41/41**, pristine.
-
-- **Phase 0** scaffold — Approved. Plan fix: vitest.config needs `plugins:[react()]`.
-- **Phase 1** backend data layer (cache + last-good fallback, football-data.org client, normalize, advancement/tiebreaker logic, data service w/ snapshot fallback, `/api` routes) — Approved. Fixes: dropped unused `now` param; added dataService live-path tests.
-- **Phase 2** Panini design system + app shell + minimal Today view — Approved (after fixing an `act()` warning; tests pristine).
-- **Phase 3** Render deploy config (`render.yaml`, `engines`, deploy docs) — prod smoke test passed (Express serves SPA + `/api`).
-- **Final whole-branch review** (opus) — verdict "merge with fixes":
-  - **CRITICAL fixed** (`433f45a`): `advancementStatus` falsely marked tiebreaker-3rd teams "Through". Now rank-based when the group is complete (+ conservative points clinch mid-group). Proven by a completed-3-way-tie test (3rd-on-GD → `alive`, not `through`).
-  - Important fixed: `bestThirds` small-field test; guarded the live standings transform with snapshot fallback.
-  - Deferred Minors (Experience plan): MatchSticker `0–0` null-score display; `Term` is title-only (real popover comes with the views); shallow scorers test.
-
-## Toolchain / permissions notes
-- Run node/npm via `/opt/homebrew/opt/node/bin/{npm,npx}` (old npm 6 shim shadows PATH).
-- Permissions: broad allow-rules in `~/.claude/settings.json` + `defaultMode: auto` in project `.claude/settings.json`. Keep ledger in `docs/` (writes into `.git/` are gated specially).
+## Experience — ✅ all phases implemented + reviewed (branch `build/experience`, pending final review + merge)
+Base `8e09ba4`. Each phase TDD + per-phase review + fix loop. Full suite **77 tests, pristine (no act warnings)**.
+- **Phase 4** glossary + Modal + How-It-Works onboarding — Approved.
+- **Phase 5** full Today dashboard + what-to-watch hero — Approved. Fix: pinned hero+strip count, FINISHED/cap/PAUSED coverage, emphasized the "why" reason.
+- **Phase 6** Standings & Bracket — Approved. Fix (§2.5): show per-row advancement notes (not just leader) + GF column. TiebreakerExplainer verified factually correct vs backend.
+- **Phase 7** Timeline by date — Approved. Fix: pinned `en-US` date locale (portability bug), single-today-marker test.
+- **Phase 8** host-city Map (SVG pins) — Approved. Fix (a11y): pins activate on Space+Enter, `role=group` on svg, keyboard test. DRY: cities via `/api/reference` (single source).
+- **Polish** — `aria-modal` on Modal; real glossary tooltips (`Term`) in onboarding so "hover any underlined term" is true.
 
 ## Next
-- **Experience plan** (phases 4–8: glossary + How-It-Works onboarding, full Today dashboard w/ what-to-watch, Standings & Bracket, Timeline, host-city Map). New branch `build/experience` off updated `main`.
+- Experience final whole-branch review (opus) → merge `build/experience` → `main`.
+- (Optional) launch the app + screenshot to show it running; set up Render deploy.
+
+## Toolchain / permissions notes
+- node/npm via `/opt/homebrew/opt/node/bin/{npm,npx}`. Permissions: broad allow-rules + `defaultMode: auto` (activated via /hooks).
