@@ -17,4 +17,9 @@ describe('pickMatchToWatch', () => {
     expect(pick.match.id).toBe(2);
     expect(pick.reason).toMatch(/knockout/i);
   });
+  it('picks a PAUSED match over a scheduled group match', () => {
+    const pick = pickMatchToWatch([m(1), m(2, { status: 'PAUSED' })]);
+    expect(pick.match.id).toBe(2);
+    expect(pick.reason).toMatch(/live/i);
+  });
 });
