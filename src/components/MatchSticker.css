@@ -10,3 +10,66 @@
 .match__wash { position: absolute; top: 0; bottom: 0; width: 53%; opacity: .08; background-size: cover; background-position: center; pointer-events: none; z-index: 0; }
 .match__wash--l { left: 0; -webkit-mask-image: linear-gradient(90deg, #000 0, #000 32%, transparent 96%); mask-image: linear-gradient(90deg, #000 0, #000 32%, transparent 96%); }
 .match__wash--r { right: 0; -webkit-mask-image: linear-gradient(270deg, #000 0, #000 32%, transparent 96%); mask-image: linear-gradient(270deg, #000 0, #000 32%, transparent 96%); }
+
+/* ── Featured / hero variant ─────────────────────────────────────────────── */
+
+/* Foil sweep animation */
+@keyframes match-foil-sweep {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(220%);  }
+}
+
+/* LIVE chip pulse */
+@keyframes match-live-pulse {
+  0%, 100% { opacity: 1;    transform: scale(1);    }
+  50%       { opacity: .65; transform: scale(1.08); }
+}
+
+/* Gold glow on the card shell */
+.match--featured { box-shadow: 0 0 0 2px var(--gold), 0 10px 28px rgba(0,0,0,.2); }
+
+/* Stronger flag wash */
+.match--featured ~ .match__wash,
+.match--featured + .match__wash { opacity: .22; }
+
+/* Target the wash divs that are siblings of the featured .match inside the card */
+.sticker:has(.match--featured) .match__wash { opacity: .22; }
+
+/* Bigger score */
+.match--featured .match__score { font-size: 52px; }
+
+/* Bigger team names */
+.match--featured .team__name { font-size: 20px; }
+
+/* Bigger medallion badges */
+.match--featured .team__badge { width: 48px; height: 48px; }
+
+/* Foil sweep pseudo-element (layered above the StickerCard foil) */
+.sticker:has(.match--featured)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: linear-gradient(115deg, transparent 0%, rgba(247,233,176,.55) 50%, transparent 100%);
+  mix-blend-mode: screen;
+  transform: translateX(-120%);
+  animation: match-foil-sweep 4s ease-in-out infinite;
+}
+
+/* Pulsing LIVE chip */
+.match--featured .match__live {
+  animation: match-live-pulse 2s ease-in-out infinite;
+}
+
+/* Accessibility: disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .sticker:has(.match--featured)::before {
+    animation: none;
+    transform: none;
+    background: none;
+  }
+  .match--featured .match__live {
+    animation: none;
+  }
+}
