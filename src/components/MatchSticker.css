@@ -10,3 +10,50 @@
 .match__wash { position: absolute; top: 0; bottom: 0; width: 53%; opacity: .08; background-size: cover; background-position: center; pointer-events: none; z-index: 0; }
 .match__wash--l { left: 0; -webkit-mask-image: linear-gradient(90deg, #000 0, #000 32%, transparent 96%); mask-image: linear-gradient(90deg, #000 0, #000 32%, transparent 96%); }
 .match__wash--r { right: 0; -webkit-mask-image: linear-gradient(270deg, #000 0, #000 32%, transparent 96%); mask-image: linear-gradient(270deg, #000 0, #000 32%, transparent 96%); }
+
+/* ── Featured / hero card ── */
+/* Gold frame + drop shadow on the StickerCard wrapper */
+.match--featured-card {
+  background: #f0e3bb;
+  box-shadow: 0 0 0 2px var(--gold), 0 10px 26px rgba(0,0,0,.18);
+  padding: 18px;
+}
+
+/* Stronger flag wash on featured */
+.match--featured-card .match__wash {
+  opacity: .20;
+}
+
+/* Score container: soft radial highlight behind score digits */
+.match--featured .match__mid {
+  min-width: 80px;
+  position: relative;
+}
+.match--featured .match__score {
+  position: relative;
+  font-size: 50px;
+  background: radial-gradient(closest-side, rgba(247,233,176,.6), transparent 80%);
+  border-radius: 8px;
+  padding: 2px 6px;
+}
+
+/* Bigger time display when no score yet */
+.match--featured .match__time {
+  font-size: 16px;
+}
+
+/* Bigger team names on featured */
+.match--featured .team__name {
+  font-size: 20px;
+}
+
+/* Bigger medallion badges on featured */
+.match--featured .team__badge {
+  width: 46px;
+  height: 46px;
+  font-size: 14px;
+}
+.match--featured .team__badge img {
+  width: 46px;
+  height: 46px;
+}
