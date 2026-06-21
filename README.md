@@ -15,3 +15,13 @@ Mundial26 visualizes what's been played and what's coming up — by **date** and
 
 ## Data
 Fixtures, results, and standings come from the [football-data.org](https://www.football-data.org) free API (no live tick — refreshed periodically). Host-city and group reference data is bundled.
+
+## Run locally
+1. `cp .env.example .env` and (optionally) add `FOOTBALL_DATA_API_KEY`. Without a key the app serves bundled snapshot data.
+2. `npm install`
+3. `npm run dev` — Vite on its dev port, Express API on :3000 (proxied).
+
+## Deploy (Render)
+- Push to GitHub, create a Render **Blueprint** from `render.yaml`.
+- Set `FOOTBALL_DATA_API_KEY` in the Render dashboard (Environment).
+- Render runs `npm install && npm run build`, then `npm start` (Express serves `dist/` + `/api`).
