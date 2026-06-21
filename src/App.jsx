@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import './theme/global.css';
 import TodayView from './views/TodayView.jsx';
+import StandingsView from './views/StandingsView.jsx';
+import TimelineView from './views/TimelineView.jsx';
+import MapView from './views/MapView.jsx';
+import HowItWorks from './explainer/HowItWorks.jsx';
 
 const VIEWS = [
   { key: 'today', label: 'Today' },
@@ -11,6 +15,7 @@ const VIEWS = [
 
 export default function App() {
   const [view, setView] = useState('today');
+  const [showHelp, setShowHelp] = useState(false);
   return (
     <div className="app">
       <header className="app__header">
@@ -25,14 +30,16 @@ export default function App() {
               {v.label}
             </button>
           ))}
+          <button className="app__help" onClick={() => setShowHelp(true)}>New to soccer? Start here</button>
         </nav>
       </header>
       <main className="app__main">
         {view === 'today' && <TodayView />}
-        {view === 'timeline' && <section aria-label="Timeline">Timeline (coming in Plan 2)</section>}
-        {view === 'map' && <section aria-label="Map">Map (coming in Plan 2)</section>}
-        {view === 'standings' && <section aria-label="Standings">Standings (coming in Plan 2)</section>}
+        {view === 'timeline' && <TimelineView />}
+        {view === 'map' && <MapView />}
+        {view === 'standings' && <StandingsView />}
       </main>
+      <HowItWorks open={showHelp} onClose={() => setShowHelp(false)} />
     </div>
   );
 }
