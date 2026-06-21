@@ -20,4 +20,15 @@ describe('MatchSticker', () => {
     expect(screen.queryByText('LIVE')).not.toBeInTheDocument();
     expect(screen.getByTestId('kickoff')).toBeInTheDocument();
   });
+
+  it('shows channel line when channels present', () => {
+    render(<MatchSticker match={{ ...base, status: 'SCHEDULED', utcDate: '2026-06-15T18:00:00Z', score: { home: null, away: null }, channels: { en: 'FOX', es: 'Telemundo' } }} />);
+    expect(screen.getByText(/FOX/)).toBeInTheDocument();
+    expect(screen.getByText(/Telemundo/)).toBeInTheDocument();
+  });
+
+  it('does not render channel line when channels is null', () => {
+    render(<MatchSticker match={{ ...base, status: 'SCHEDULED', utcDate: '2026-06-15T18:00:00Z', score: { home: null, away: null }, channels: null }} />);
+    expect(screen.queryByText(/📺/)).not.toBeInTheDocument();
+  });
 });

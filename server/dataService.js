@@ -6,6 +6,7 @@ import { normalizeMatch, normalizeStandings } from './normalize.js';
 import { rankGroup, advancementStatus, bestThirds } from './standings.js';
 import { HOST_CITIES } from './data/hostCities.js';
 import { cityIdForMatch } from './data/matchVenues.js';
+import { channelsForMatch } from './data/matchChannels.js';
 
 const SNAPSHOT = JSON.parse(
   readFileSync(fileURLToPath(new URL('./data/snapshot.json', import.meta.url)), 'utf8'),
@@ -66,7 +67,7 @@ export function createDataService({ config, fetchImpl = fetch, now = () => Date.
       const { value, stale, updatedAt } = await load('matches', fetchMatches, SNAPSHOT.matches);
       const matches = (value.matches ?? [])
         .map(normalizeMatch)
-        .map((m) => ({ ...m, city: resolveCity(m) }));
+        .map((m) => ({ ...m, city: resolveCity(m), channels: channelsForMatch(m.id) }));
       return { updatedAt, stale, matches };
     },
 

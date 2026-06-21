@@ -32,6 +32,9 @@ export default function MatchSticker({ match }) {
         <TeamSticker team={match.away} align="right" />
       </div>
       {match.city && <div className="match__city">{match.city.city}</div>}
+      {match.channels && (
+        <div className="match__channels">📺 {match.channels.en} · {match.channels.es}</div>
+      )}
     </StickerCard>
   );
 }
