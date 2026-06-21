@@ -1,6 +1,6 @@
 .gt-card { overflow-x: auto; }
 .gt { width: 100%; border-collapse: collapse; }
-.gt caption { text-align: left; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; }
+.gt caption { text-align: left; font-family: var(--font-display); font-weight: 400; text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px; }
 .gt th, .gt td { padding: 6px 6px; text-align: center; font-size: 13px; }
 .gt th:first-child, .gt td:first-child { text-align: left; }
 .gt tbody tr { border-top: 1px solid var(--paper-edge); }
