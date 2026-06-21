@@ -32,7 +32,7 @@ export default function TimelineView({
         return (
           <div key={day.dayKey} aria-current={isToday ? 'date' : undefined} style={{ marginBottom: 22 }}>
             <h2>{day.label}{isToday && <span style={{ marginLeft: 8, color: 'var(--gold)' }}>● Today</span>}</h2>
-            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
+            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
               {day.matches.map((m) => <MatchSticker key={m.id} match={m} />)}
             </div>
           </div>
