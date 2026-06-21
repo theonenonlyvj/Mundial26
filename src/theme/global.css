@@ -15,3 +15,4 @@ h1, h2, h3 { letter-spacing: 0.02em; text-transform: uppercase; }
 .app__nav-btn { border: 0; border-radius: 10px; padding: 8px 14px; font-weight: 800; cursor: pointer; background: var(--paper-edge); color: var(--ink); }
 .app__nav-btn.is-active { background: var(--gold); }
 .app__main { padding: 20px; max-width: 1100px; margin: 0 auto; }
+.app__help { margin-left: auto; border: 0; border-radius: 10px; padding: 8px 14px; font-weight: 800; cursor: pointer; background: var(--gold); color: var(--ink); }

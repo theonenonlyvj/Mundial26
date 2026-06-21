@@ -1,0 +1,7 @@
+.gt { width: 100%; border-collapse: collapse; }
+.gt caption { text-align: left; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; }
+.gt th, .gt td { padding: 6px 8px; text-align: center; font-size: 13px; }
+.gt th:first-child, .gt td:first-child { text-align: left; }
+.gt tbody tr { border-top: 1px solid var(--paper-edge); }
+.gt__note { font-size: 11px; color: var(--muted); text-align: left; }
+.gt__row-note { font-size: 11px; color: var(--muted); margin-top: 2px; }

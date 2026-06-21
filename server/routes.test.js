@@ -39,4 +39,10 @@ describe('api routes', () => {
     expect(res.body.error).toBe('upstream_unavailable');
     expect(res.body.message).toBe('boom');
   });
+  it('GET /api/reference returns host cities', async () => {
+    const res = await request(app()).get('/api/reference');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.hostCities)).toBe(true);
+    expect(res.body.hostCities.length).toBe(16);
+  });
 });

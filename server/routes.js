@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { HOST_CITIES } from './data/hostCities.js';
 
 export function buildRouter(dataService) {
   const router = Router();
@@ -12,5 +13,6 @@ export function buildRouter(dataService) {
   router.get('/matches', send(() => dataService.getMatches()));
   router.get('/standings', send(() => dataService.getStandings()));
   router.get('/scorers', send(() => dataService.getScorers()));
+  router.get('/reference', (_req, res) => res.json({ hostCities: HOST_CITIES }));
   return router;
 }
