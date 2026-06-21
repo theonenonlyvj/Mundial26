@@ -126,4 +126,27 @@ describe('dataService (live API mode, injected fetchImpl)', () => {
     expect(Array.isArray(matches)).toBe(true);
     expect(matches.length).toBeGreaterThan(0);
   });
+
+  it('transform guard: malformed live standings payload falls back to snapshot with stale:true', async () => {
+    // standings is a string (not an array) — causes .filter() to throw during normalizeStandings
+    const malformedStandingsPayload = { standings: 'MALFORMED' };
+    const fetchImpl = async (url) => {
+      if (url.includes('/standings')) {
+        return { ok: true, status: 200, json: async () => malformedStandingsPayload };
+      }
+      return { ok: true, status: 200, json: async () => FAKE_MATCHES_PAYLOAD };
+    };
+    const svc = createDataService({
+      config: { apiKey: 'KEY', ttls: { matches: 1000, standings: 1000, scorers: 1000 } },
+      fetchImpl,
+      now: () => 123456,
+    });
+
+    // Must not throw; must fall back to snapshot data with stale:true
+    const result = await svc.getStandings();
+    expect(result.stale).toBe(true);
+    expect(result.updatedAt).toBeNull();
+    expect(Array.isArray(result.groups)).toBe(true);
+    expect(result.groups.length).toBeGreaterThan(0);
+  });
 });
