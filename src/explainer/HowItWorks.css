@@ -1,0 +1,4 @@
+.hiw__step { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--paper-edge); }
+.hiw__num { flex: 0 0 32px; height: 32px; border-radius: 50%; background: var(--gold); color: var(--ink); font-weight: 900; display: grid; place-items: center; }
+.hiw__points { display: flex; gap: 8px; margin-top: 6px; }
+.hiw__chip { background: var(--paper-edge); border-radius: 8px; padding: 4px 8px; font-weight: 800; }

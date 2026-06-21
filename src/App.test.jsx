@@ -18,4 +18,10 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Standings' }));
     expect(screen.getByRole('region', { name: /standings/i })).toBeInTheDocument();
   });
+
+  it('opens the How It Works modal', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /new to soccer/i }));
+    expect(screen.getByRole('dialog', { name: /how the world cup works/i })).toBeInTheDocument();
+  });
 });
