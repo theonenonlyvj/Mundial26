@@ -11,7 +11,9 @@ export default function MatchSticker({ match, now = new Date().toISOString() }) 
   const showScore = PLAYED.has(match.status);
   return (
     <StickerCard foil={isLive}>
-      <div className="match">
+      {match.home.crest && <div className="match__wash match__wash--l" style={{ backgroundImage: `url(${match.home.crest})` }} aria-hidden="true" />}
+      {match.away.crest && <div className="match__wash match__wash--r" style={{ backgroundImage: `url(${match.away.crest})` }} aria-hidden="true" />}
+      <div className="match" style={{ position: 'relative', zIndex: 1 }}>
         <TeamSticker team={match.home} />
         <div className="match__mid">
           {showScore ? (
@@ -25,9 +27,9 @@ export default function MatchSticker({ match, now = new Date().toISOString() }) 
         </div>
         <TeamSticker team={match.away} align="right" />
       </div>
-      {match.city && <div className="match__city">{match.city.city}</div>}
+      {match.city && <div className="match__city" style={{ position: 'relative', zIndex: 1 }}>{match.city.city}</div>}
       {match.channels && (
-        <div className="match__channels">📺 {match.channels.en} · {match.channels.es}</div>
+        <div className="match__channels" style={{ position: 'relative', zIndex: 1 }}>📺 {match.channels.en} · {match.channels.es}</div>
       )}
     </StickerCard>
   );
