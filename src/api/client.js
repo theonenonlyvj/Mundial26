@@ -6,3 +6,4 @@ async function getJson(path) {
 export const getMatches = () => getJson('/api/matches');
 export const getStandings = () => getJson('/api/standings');
 export const getScorers = () => getJson('/api/scorers');
+export const getReference = () => getJson('/api/reference');
