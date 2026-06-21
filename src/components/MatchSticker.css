@@ -14,6 +14,7 @@
 /* ── Featured / hero card ── */
 /* Gold frame + drop shadow on the StickerCard wrapper */
 .match--featured-card {
+  background: #f0e3bb;
   box-shadow: 0 0 0 2px var(--gold), 0 10px 26px rgba(0,0,0,.18);
   padding: 18px;
 }
