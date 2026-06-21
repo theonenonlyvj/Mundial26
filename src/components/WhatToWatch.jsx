@@ -6,18 +6,10 @@ export default function WhatToWatch({ matches }) {
   if (!pick) return null;
   return (
     <div className="watch" style={{ marginBottom: 16 }}>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        fontWeight: 900,
-        textTransform: 'uppercase',
-        color: 'var(--gold)',
-        fontSize: '1.05rem',
-        letterSpacing: '0.08em',
-        marginBottom: 8,
-      }}>
+      <div style={{ fontWeight: 900, textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 6 }}>
         ⭐ What to watch — {pick.reason}
       </div>
-      <MatchSticker match={pick.match} featured />
+      <MatchSticker match={pick.match} />
     </div>
   );
 }
