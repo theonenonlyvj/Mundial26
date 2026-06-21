@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './theme/global.css';
 import TodayView from './views/TodayView.jsx';
 import StandingsView from './views/StandingsView.jsx';
+import TimelineView from './views/TimelineView.jsx';
 import HowItWorks from './explainer/HowItWorks.jsx';
 
 const VIEWS = [
@@ -33,7 +34,7 @@ export default function App() {
       </header>
       <main className="app__main">
         {view === 'today' && <TodayView />}
-        {view === 'timeline' && <section aria-label="Timeline">Timeline (coming in Plan 2)</section>}
+        {view === 'timeline' && <TimelineView />}
         {view === 'map' && <section aria-label="Map">Map (coming in Plan 2)</section>}
         {view === 'standings' && <StandingsView />}
       </main>
