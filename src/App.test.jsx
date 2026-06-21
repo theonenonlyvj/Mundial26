@@ -6,7 +6,11 @@ import App from './App.jsx';
 
 beforeEach(() => vi.stubGlobal('fetch', async (url) => ({
   ok: true,
-  json: async () => (url.includes('standings') ? { groups: [], bestThirdIds: [] } : { matches: [] }),
+  json: async () => {
+    if (url.includes('standings')) return { groups: [], bestThirdIds: [] };
+    if (url.includes('reference')) return { hostCities: [] };
+    return { matches: [] };
+  },
 })));
 afterEach(() => vi.restoreAllMocks());
 
