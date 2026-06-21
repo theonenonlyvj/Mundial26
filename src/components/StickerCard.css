@@ -5,8 +5,10 @@
   border: 2px solid var(--paper-edge);
   padding: 12px;
   position: relative;
+  overflow: hidden;
 }
 .sticker--accent { border-left: 6px solid var(--accent, var(--gold)); }
+.sticker--foil { border-color: #d9be6a; }
 .sticker--foil::before {
   content: ""; position: absolute; inset: 0;
   border-radius: var(--sticker-radius);
@@ -14,4 +16,10 @@
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask-composite: exclude;
   pointer-events: none;
+}
+.sticker--foil::after {
+  content: ""; position: absolute; inset: 0; border-radius: var(--sticker-radius);
+  pointer-events: none; z-index: 2;
+  background: linear-gradient(115deg, rgba(247,233,176,0) 38%, rgba(247,233,176,.5) 50%, rgba(216,178,74,0) 62%);
+  mix-blend-mode: screen;
 }

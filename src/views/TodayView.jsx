@@ -9,7 +9,7 @@ function Strip({ title, matches }) {
   return (
     <section style={{ marginTop: 20 }}>
       <h2>{title}</h2>
-      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
+      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
         {matches.map((m) => <MatchSticker key={m.id} match={m} />)}
       </div>
     </section>

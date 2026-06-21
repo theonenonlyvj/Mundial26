@@ -5,14 +5,27 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: "Arial Narrow", system-ui, sans-serif;
+  font-family: var(--font-body);
 }
-h1, h2, h3 { letter-spacing: 0.02em; text-transform: uppercase; }
 
-.app__header { padding: 16px 20px; background: var(--ink); color: var(--paper); }
+/* Paper grain overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: .5;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 0;
+}
+
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; letter-spacing: .03em; text-transform: uppercase; }
+
+.app__header { padding: 16px 20px; background: var(--ink); color: var(--paper); position: relative; z-index: 1; }
 .app__header h1 { margin: 0 0 8px; color: var(--gold); }
 .app__nav { display: flex; gap: 8px; flex-wrap: wrap; }
 .app__nav-btn { border: 0; border-radius: 10px; padding: 8px 14px; font-weight: 800; cursor: pointer; background: var(--paper-edge); color: var(--ink); }
 .app__nav-btn.is-active { background: var(--gold); }
-.app__main { padding: 20px; max-width: 1240px; margin: 0 auto; }
+.app__main { padding: 20px; max-width: 1240px; margin: 0 auto; position: relative; z-index: 1; }
 .app__help { margin-left: auto; border: 0; border-radius: 10px; padding: 8px 14px; font-weight: 800; cursor: pointer; background: var(--gold); color: var(--ink); }
