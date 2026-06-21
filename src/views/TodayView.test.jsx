@@ -22,7 +22,7 @@ describe('TodayView', () => {
     }));
     render(<TodayView now="2026-06-15T12:00:00Z" />);
     await waitFor(() => expect(screen.getByText(/what to watch/i)).toBeInTheDocument());
-    expect(screen.getAllByText('Brazil').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Brazil')).toHaveLength(2);
     expect(screen.getByText(/recent results/i)).toBeInTheDocument();
   });
 
