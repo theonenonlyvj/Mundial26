@@ -12,7 +12,9 @@
 .team__name {
   font-family: var(--font-body);
   font-weight: 800;
+  font-size: 15px;
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  word-break: normal;
   text-shadow: 0 1px 0 rgba(244,236,216,.9);
 }
