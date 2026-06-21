@@ -49,8 +49,8 @@ describe('MapView', () => {
   it('clicking a city button reveals its matches', async () => {
     stubFetch();
     render(<MapView />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Mexico City' })).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: 'Mexico City' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /Mexico City/ })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Mexico City/ }));
     // Panel header shows stadium name (there may be multiple, e.g. chip + panel)
     expect(screen.getAllByText(/Estadio Azteca/).length).toBeGreaterThan(0);
     // "Mexico" appears as team name in the rendered match sticker
@@ -60,17 +60,17 @@ describe('MapView', () => {
   it('city buttons are keyboard-accessible (Enter key selects)', async () => {
     stubFetch();
     render(<MapView />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Mexico City' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /Mexico City/ })).toBeInTheDocument());
     // Real <button> elements respond to click triggered by Enter via browser; simulate click
-    fireEvent.click(screen.getByRole('button', { name: 'Mexico City' }));
+    fireEvent.click(screen.getByRole('button', { name: /Mexico City/ }));
     expect(screen.getAllByText(/Estadio Azteca/).length).toBeGreaterThan(0);
   });
 
   it('shows no-matches message for a city with no games', async () => {
     stubFetch();
     render(<MapView />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Seattle' })).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: 'Seattle' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /Seattle/ })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Seattle/ }));
     expect(screen.getByText(/no matches for this city yet/i)).toBeInTheDocument();
   });
 });
