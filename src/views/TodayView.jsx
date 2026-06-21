@@ -16,7 +16,10 @@ function Strip({ title, matches }) {
   );
 }
 
-export default function TodayView({ now = new Date().toISOString() }) {
+export default function TodayView({
+  now = new Date().toISOString(),
+  timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+}) {
   const [matches, setMatches] = useState(null);
   const [error, setError] = useState(null);
 
@@ -31,19 +34,20 @@ export default function TodayView({ now = new Date().toISOString() }) {
   if (error) return <section aria-label="Today">Couldn't load matches right now.</section>;
   if (!matches) return <section aria-label="Today">Loading today's matches…</section>;
 
-  const { today, recent, upcoming } = bucketMatches(matches, now);
+  const { today, recent, upcoming } = bucketMatches(matches, now, timeZone);
   const heroPool = today.length ? today : upcoming;
 
   return (
     <section aria-label="Today">
       <WhatToWatch matches={heroPool} />
+      <p style={{ fontSize: '0.8em', color: 'var(--muted, #888)', marginTop: 4 }}>🕐 Kickoff times shown in your local time zone.</p>
       {today.length ? (
-        <Strip title="On today" matches={today} />
+        <Strip title="On Today" matches={today} />
       ) : (
         <p style={{ fontWeight: 700 }}>No matches today — here's what's coming up next. ⤵️</p>
       )}
-      <Strip title="Recent results" matches={recent} />
-      <Strip title="Coming up" matches={upcoming} />
+      <Strip title="Coming Up" matches={upcoming} />
+      <Strip title="Recent Results" matches={recent} />
     </section>
   );
 }
