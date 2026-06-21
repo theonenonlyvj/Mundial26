@@ -4,11 +4,31 @@ import { defineTerm } from './glossary.js';
 import './HowItWorks.css';
 
 const STEPS = [
-  { n: 1, title: '48 teams enter the tournament', body: 'They are split into 12 groups of 4 teams (Groups A–L).' },
-  { n: 2, title: 'Everyone plays everyone', body: 'Inside each group, every team plays the other three once — that\'s 3 matchdays.' },
-  { n: 3, title: 'Points decide the table', body: 'Win = 3 points, a draw (tie) = 1, a loss = 0. Level on points? Goal difference breaks the tie.' },
-  { n: 4, title: 'Who advances?', body: 'The top 2 of each group go through — plus the 8 best 3rd-place teams across all groups.' },
-  { n: 5, title: 'Then it\'s knockout', body: 'Those 32 teams enter the Round of 32: win or you\'re out, all the way to the Final.' },
+  {
+    n: 1,
+    title: '48 teams enter the tournament',
+    body: <>They are split into <Term define={defineTerm('groupStage')}>12 groups</Term> of 4 teams (Groups A–L).</>,
+  },
+  {
+    n: 2,
+    title: 'Everyone plays everyone',
+    body: 'Inside each group, every team plays the other three once — that\'s 3 matchdays.',
+  },
+  {
+    n: 3,
+    title: 'Points decide the table',
+    body: <>Win = 3 points, a <Term define={defineTerm('draw')}>draw</Term> (tie) = 1, a loss = 0. Level on points? <Term define={defineTerm('goalDifference')}>goal difference</Term> breaks the tie.</>,
+  },
+  {
+    n: 4,
+    title: 'Who advances?',
+    body: 'The top 2 of each group go through — plus the 8 best 3rd-place teams across all groups.',
+  },
+  {
+    n: 5,
+    title: 'Then it\'s knockout',
+    body: <>Those 32 teams enter the <Term define={defineTerm('roundOf32')}>Round of 32</Term>: win or you\'re out, all the way to the Final. That\'s <Term define={defineTerm('knockout')}>knockout</Term>.</>,
+  },
 ];
 
 export default function HowItWorks({ open, onClose }) {
