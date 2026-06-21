@@ -5,14 +5,24 @@ import { createFootballDataClient } from './footballDataClient.js';
 import { normalizeMatch, normalizeStandings } from './normalize.js';
 import { rankGroup, advancementStatus, bestThirds } from './standings.js';
 import { HOST_CITIES } from './data/hostCities.js';
+import { cityIdForMatch } from './data/matchVenues.js';
 
 const SNAPSHOT = JSON.parse(
   readFileSync(fileURLToPath(new URL('./data/snapshot.json', import.meta.url)), 'utf8'),
 );
 
-function resolveCity(venue) {
-  if (!venue) return null;
-  return HOST_CITIES.find((c) => c.stadium === venue) ?? null;
+const cityById = new Map(HOST_CITIES.map((c) => [c.id, c]));
+
+function resolveCity(match) {
+  // First try: resolve by stadium name (works when API provides venue)
+  if (match.venue) {
+    const byVenue = HOST_CITIES.find((c) => c.stadium === match.venue);
+    if (byVenue) return byVenue;
+  }
+  // Fallback: resolve by match id from static bundled schedule map
+  const cityId = cityIdForMatch(match.id);
+  if (cityId) return cityById.get(cityId) ?? null;
+  return null;
 }
 
 export function createDataService({ config, fetchImpl = fetch, now = () => Date.now() }) {
@@ -56,7 +66,7 @@ export function createDataService({ config, fetchImpl = fetch, now = () => Date.
       const { value, stale, updatedAt } = await load('matches', fetchMatches, SNAPSHOT.matches);
       const matches = (value.matches ?? [])
         .map(normalizeMatch)
-        .map((m) => ({ ...m, city: resolveCity(m.venue) }));
+        .map((m) => ({ ...m, city: resolveCity(m) }));
       return { updatedAt, stale, matches };
     },
 
