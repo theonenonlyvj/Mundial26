@@ -12,7 +12,7 @@ export default function Modal({ open, title, onClose, children }) {
   if (!open) return null;
   return (
     <div className="modal__backdrop" onClick={onClose}>
-      <div className="modal__panel" role="dialog" aria-label={title} onClick={(e) => e.stopPropagation()}>
+      <div className="modal__panel" role="dialog" aria-label={title} aria-modal="true" onClick={(e) => e.stopPropagation()}>
         <div className="modal__head">
           <h2>{title}</h2>
           <button className="modal__close" onClick={onClose} aria-label="Close">✕</button>
