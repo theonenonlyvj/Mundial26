@@ -3,10 +3,15 @@ services:
     name: mundial26
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
+    # --include=dev: NODE_ENV=production (below) makes npm skip devDependencies,
+    # but vite/react/build plugins live there and are needed to build the SPA.
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     envVars:
       - key: FOOTBALL_DATA_API_KEY
         sync: false
       - key: NODE_ENV
         value: production
+      # Pin Node >= 20.12 so `--env-file-if-exists` (used in npm start) is supported.
+      - key: NODE_VERSION
+        value: "22"
