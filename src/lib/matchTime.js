@@ -1,14 +1,15 @@
-export function dayKey(utcDate) {
-  return utcDate ? utcDate.slice(0, 10) : '';
+export function dayKey(utcDate, timeZone) {
+  if (!utcDate) return '';
+  return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(utcDate));
 }
 
-export function bucketMatches(matches, nowIso) {
-  const todayKey = dayKey(nowIso);
+export function bucketMatches(matches, nowIso, timeZone) {
+  const todayKey = dayKey(nowIso, timeZone);
   const today = [];
   const recent = [];
   const upcoming = [];
   for (const match of matches) {
-    const key = dayKey(match.utcDate);
+    const key = dayKey(match.utcDate, timeZone);
     if (key === todayKey) today.push(match);
     else if (key < todayKey) { if (match.status === 'FINISHED') recent.push(match); }
     else upcoming.push(match);

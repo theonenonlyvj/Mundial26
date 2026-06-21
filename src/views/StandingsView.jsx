@@ -31,7 +31,7 @@ export default function StandingsView() {
     <section aria-label="Standings">
       <Legend />
       <TiebreakerExplainer />
-      <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', marginTop: 12 }}>
+      <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fill, minmax(440px, 1fr))', marginTop: 12 }}>
         {data.groups.map((g) => <GroupTable key={g.group} group={g} />)}
       </div>
       <p style={{ color: 'var(--muted)', marginTop: 12 }}>

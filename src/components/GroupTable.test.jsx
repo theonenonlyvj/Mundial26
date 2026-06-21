@@ -3,6 +3,13 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import GroupTable from './GroupTable.jsx';
 
+const groupLiveFormat = {
+  group: 'Group A',
+  table: [
+    { rank: 1, team: { name: 'Mexico', tla: 'MEX' }, played: 3, won: 3, draw: 0, lost: 0, goalsFor: 6, goalsAgainst: 1, goalDifference: 5, points: 9, status: 'through', note: null },
+  ],
+};
+
 const group = {
   group: 'GROUP_A',
   table: [
@@ -23,6 +30,12 @@ describe('GroupTable', () => {
   it('renders the out row note text', () => {
     render(<GroupTable group={group} />);
     expect(screen.getByText(/Eliminated/)).toBeInTheDocument();
+  });
+
+  it('handles live API format "Group A" without doubling to "Group Group A"', () => {
+    render(<GroupTable group={groupLiveFormat} />);
+    expect(screen.getByText('Group A')).toBeInTheDocument();
+    expect(screen.queryByText(/Group Group/i)).toBeNull();
   });
 
   it('renders the GF value for each row', () => {
