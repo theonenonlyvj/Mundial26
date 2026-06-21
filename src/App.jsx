@@ -9,7 +9,7 @@ import HowItWorks from './explainer/HowItWorks.jsx';
 const VIEWS = [
   { key: 'today', label: 'Today' },
   { key: 'timeline', label: 'Timeline' },
-  { key: 'map', label: 'Map' },
+  { key: 'map', label: 'Cities' },
   { key: 'standings', label: 'Standings' },
 ];
 
