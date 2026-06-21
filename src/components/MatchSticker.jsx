@@ -1,18 +1,12 @@
 import StickerCard from './StickerCard.jsx';
 import TeamSticker from './TeamSticker.jsx';
+import { formatKickoff } from '../lib/kickoff.js';
 import './MatchSticker.css';
 
 const LIVE = new Set(['IN_PLAY', 'PAUSED']);
 const PLAYED = new Set(['IN_PLAY', 'PAUSED', 'FINISHED']);
 
-function kickoff(utcDate) {
-  if (!utcDate) return '';
-  return new Date(utcDate).toLocaleString(undefined, {
-    weekday: 'short', hour: 'numeric', minute: '2-digit',
-  });
-}
-
-export default function MatchSticker({ match }) {
+export default function MatchSticker({ match, now = new Date().toISOString() }) {
   const isLive = LIVE.has(match.status);
   const showScore = PLAYED.has(match.status);
   return (
@@ -25,7 +19,7 @@ export default function MatchSticker({ match }) {
               <span>{match.score.home ?? 0}</span> – <span>{match.score.away ?? 0}</span>
             </div>
           ) : (
-            <div className="match__time" data-testid="kickoff">{kickoff(match.utcDate)}</div>
+            <div className="match__time" data-testid="kickoff">{formatKickoff(match.utcDate, now)}</div>
           )}
           {isLive && <span className="match__live">LIVE</span>}
         </div>
