@@ -12,7 +12,7 @@ const STEPS = [
   {
     n: 2,
     title: 'Everyone plays everyone',
-    body: 'Inside each group, every team plays the other three once — that\'s 3 matchdays.',
+    body: <>Inside each group, every team plays the other three once — that's 3 <Term define={defineTerm('matchday')}>matchdays</Term>.</>,
   },
   {
     n: 3,
@@ -27,7 +27,7 @@ const STEPS = [
   {
     n: 5,
     title: 'Then it\'s knockout',
-    body: <>Those 32 teams enter the <Term define={defineTerm('roundOf32')}>Round of 32</Term>: win or you\'re out, all the way to the Final. That\'s <Term define={defineTerm('knockout')}>knockout</Term>.</>,
+    body: <>Those 32 teams enter the <Term define={defineTerm('roundOf32')}>Round of 32</Term>: win or you're out, all the way to the Final. That's <Term define={defineTerm('knockout')}>knockout</Term>.</>,
   },
 ];
 
