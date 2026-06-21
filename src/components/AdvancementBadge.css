@@ -1,0 +1,4 @@
+.adv { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9px; color: #fff; white-space: nowrap; }
+.adv--through { background: var(--through); }
+.adv--alive { background: var(--alive); }
+.adv--out { background: var(--out); }

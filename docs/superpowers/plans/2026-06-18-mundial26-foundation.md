@@ -156,12 +156,14 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 7: Create `vitest.config.js`:**
+- [ ] **Step 7: Create `vitest.config.js`** (the `react()` plugin is required so JSX component tests transform):
 
 ```js
 import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
+  plugins: [react()],
   test: {
     environment: 'node',
     globals: true,
