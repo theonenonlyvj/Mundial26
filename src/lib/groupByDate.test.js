@@ -14,4 +14,6 @@ describe('groupMatchesByDay', () => {
     expect(days[0].matches.map((x) => x.id)).toEqual([2, 3]);
     expect(days[0].label).toMatch(/Jun 15/);
   });
+
+  it('returns [] for no matches', () => expect(groupMatchesByDay([])).toEqual([]));
 });

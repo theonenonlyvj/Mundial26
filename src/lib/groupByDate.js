@@ -1,7 +1,7 @@
 import { dayKey } from './matchTime.js';
 
 function labelFor(key) {
-  return new Date(`${key}T12:00:00Z`).toLocaleDateString(undefined, {
+  return new Date(`${key}T12:00:00Z`).toLocaleDateString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC',
   });
 }
