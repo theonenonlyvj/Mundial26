@@ -43,7 +43,7 @@ export default function MapView() {
 
   return (
     <section aria-label="Map" className="map">
-      <svg className="map__svg" viewBox={`0 0 ${SIZE.width} ${SIZE.height}`} role="img" aria-label="Host cities map">
+      <svg className="map__svg" viewBox={`0 0 ${SIZE.width} ${SIZE.height}`} role="group" aria-label="Host cities map">
         {cities.map((c) => {
           const { x, y } = project(c.lat, c.lng, SIZE);
           const active = c.id === selected;
@@ -56,7 +56,12 @@ export default function MapView() {
               aria-label={c.city}
               tabIndex={0}
               onClick={() => setSelected(c.id)}
-              onKeyDown={(e) => e.key === 'Enter' && setSelected(c.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelected(c.id);
+                }
+              }}
             >
               <circle r="12" />
               <text x="16" y="5" fontSize="20" fill="var(--ink)">{c.city}</text>

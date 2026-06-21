@@ -22,8 +22,20 @@ describe('MapView', () => {
     }));
     render(<MapView />);
     await waitFor(() => expect(screen.getByLabelText('Mexico City')).toBeInTheDocument());
+    expect(screen.getByText(/pick a city/i)).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText('Mexico City'));
     expect(screen.getByText(/Estadio Azteca/)).toBeInTheDocument();
     expect(screen.getByText('Mexico')).toBeInTheDocument();
+  });
+
+  it('activates a pin with the Enter key', async () => {
+    vi.stubGlobal('fetch', async (url) => ({
+      ok: true,
+      json: async () => (url.includes('reference') ? { hostCities: cities } : { matches }),
+    }));
+    render(<MapView />);
+    await waitFor(() => expect(screen.getByLabelText('Mexico City')).toBeInTheDocument());
+    fireEvent.keyDown(screen.getByLabelText('Mexico City'), { key: 'Enter' });
+    expect(screen.getByText(/Estadio Azteca/)).toBeInTheDocument();
   });
 });
