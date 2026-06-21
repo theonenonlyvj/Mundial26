@@ -7,6 +7,6 @@
 .match__channels { margin-top: 4px; text-align: center; font-size: 11px; color: var(--muted); }
 
 /* Half-card flag wash */
-.match__wash { position: absolute; top: 0; bottom: 0; width: 53%; opacity: .18; background-size: cover; background-position: center; pointer-events: none; z-index: 0; }
+.match__wash { position: absolute; top: 0; bottom: 0; width: 53%; opacity: .08; background-size: cover; background-position: center; pointer-events: none; z-index: 0; }
 .match__wash--l { left: 0; -webkit-mask-image: linear-gradient(90deg, #000 0, #000 32%, transparent 96%); mask-image: linear-gradient(90deg, #000 0, #000 32%, transparent 96%); }
 .match__wash--r { right: 0; -webkit-mask-image: linear-gradient(270deg, #000 0, #000 32%, transparent 96%); mask-image: linear-gradient(270deg, #000 0, #000 32%, transparent 96%); }
