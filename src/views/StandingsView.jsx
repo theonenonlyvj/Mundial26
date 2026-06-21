@@ -4,6 +4,8 @@ import GroupTable from '../components/GroupTable.jsx';
 import Legend from '../components/Legend.jsx';
 import TiebreakerExplainer from '../components/TiebreakerExplainer.jsx';
 import Bracket from '../components/Bracket.jsx';
+import Term from '../components/Term.jsx';
+import { defineTerm } from '../explainer/glossary.js';
 
 export default function StandingsView() {
   const [data, setData] = useState(null);
@@ -33,7 +35,7 @@ export default function StandingsView() {
         {data.groups.map((g) => <GroupTable key={g.group} group={g} />)}
       </div>
       <p style={{ color: 'var(--muted)', marginTop: 12 }}>
-        Plus the <strong>8 best third-place teams</strong> across all groups advance to the Round of 32.
+        Plus the <Term define={defineTerm('bestThird')}><strong>8 best third-place teams</strong></Term> across all groups advance to the Round of 32.
       </p>
       <h2 style={{ marginTop: 24 }}>Knockout bracket</h2>
       <Bracket matches={matches} />

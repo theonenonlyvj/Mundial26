@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import GroupTable from './GroupTable.jsx';
 
 const group = {
@@ -27,8 +27,10 @@ describe('GroupTable', () => {
 
   it('renders the GF value for each row', () => {
     render(<GroupTable group={group} />);
-    // Mexico has goalsFor: 6, Canada has goalsFor: 1
-    expect(screen.getByText('6')).toBeInTheDocument();
-    expect(screen.getByText('1')).toBeInTheDocument();
+    // Mexico has goalsFor: 6, Canada has goalsFor: 1 — scope to each row to avoid ambiguity
+    const mexicoRow = screen.getByText('Mexico').closest('tr');
+    const canadaRow = screen.getByText('Canada').closest('tr');
+    expect(within(mexicoRow).getByText('6')).toBeInTheDocument();
+    expect(within(canadaRow).getByText('1')).toBeInTheDocument();
   });
 });
