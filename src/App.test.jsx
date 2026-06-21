@@ -19,8 +19,8 @@ describe('App', () => {
     expect(screen.getByRole('region', { name: /standings/i })).toBeInTheDocument();
   });
 
-  it('opens the How It Works modal', () => {
-    render(<App />);
+  it('opens the How It Works modal', async () => {
+    await act(async () => { render(<App />); });
     fireEvent.click(screen.getByRole('button', { name: /new to soccer/i }));
     expect(screen.getByRole('dialog', { name: /how the world cup works/i })).toBeInTheDocument();
   });
