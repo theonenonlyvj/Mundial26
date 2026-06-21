@@ -4,3 +4,4 @@
 .match__time { font-size: 13px; color: var(--muted); }
 .match__live { display: inline-block; margin-top: 2px; font-size: 10px; font-weight: 800; color: #fff; background: var(--out); padding: 1px 6px; border-radius: 8px; }
 .match__city { margin-top: 8px; text-align: center; font-size: 11px; color: var(--muted); }
+.match__channels { margin-top: 4px; text-align: center; font-size: 11px; color: var(--muted); }

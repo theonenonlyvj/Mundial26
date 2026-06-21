@@ -18,6 +18,12 @@ describe('dataService (snapshot mode, no api key)', () => {
     expect(groupA.table[0]).toHaveProperty('status');
     expect(Array.isArray(bestThirdIds)).toBe(true);
   });
+
+  it('snapshot matches have channels null (ids not in MATCH_CHANNELS)', async () => {
+    const { matches } = await svc.getMatches();
+    // snapshot ids (1, 2 etc.) are not in MATCH_CHANNELS
+    expect(matches.every((m) => m.channels === null)).toBe(true);
+  });
 });
 
 // Minimal payloads returned by the fake fetchImpl
@@ -161,6 +167,43 @@ describe('dataService (live API mode, injected fetchImpl)', () => {
     const { matches } = await svc.getMatches();
     expect(matches).toHaveLength(1);
     expect(matches[0].city?.id).toBe('mexico-city');
+    expect(matches[0].channels).toEqual({ en: 'FOX', es: 'Telemundo' });
+  });
+
+  it('unknown id -> channels is null', async () => {
+    const fetchImpl = async (url) => {
+      if (url.includes('/matches')) {
+        return {
+          ok: true, status: 200,
+          json: async () => ({
+            matches: [
+              {
+                id: 999999, // not in MATCH_CHANNELS
+                utcDate: '2026-06-11T00:00:00Z',
+                status: 'SCHEDULED',
+                stage: 'GROUP_STAGE',
+                group: 'GROUP_A',
+                matchday: 1,
+                venue: null,
+                homeTeam: { id: 1, name: 'Mexico', shortName: 'Mexico', tla: 'MEX', crest: null },
+                awayTeam: { id: 2, name: 'Canada', shortName: 'Canada', tla: 'CAN', crest: null },
+                score: { fullTime: { home: null, away: null }, winner: null },
+              },
+            ],
+          }),
+        };
+      }
+      return { ok: true, status: 200, json: async () => FAKE_STANDINGS_PAYLOAD };
+    };
+    const svc = createDataService({
+      config: { apiKey: 'KEY', ttls: { matches: 1000, standings: 1000, scorers: 1000 } },
+      fetchImpl,
+      now: () => 123456,
+    });
+
+    const { matches } = await svc.getMatches();
+    expect(matches).toHaveLength(1);
+    expect(matches[0].channels).toBeNull();
   });
 
   it('unknown id + no venue -> city is null', async () => {
