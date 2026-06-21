@@ -1,0 +1,7 @@
+.map { display: grid; grid-template-columns: minmax(280px, 1.3fr) 1fr; gap: 16px; align-items: start; }
+.map__svg { width: 100%; height: auto; background: linear-gradient(#dce8f0, var(--paper)); border-radius: var(--sticker-radius); border: 2px solid var(--paper-edge); }
+.map__pin { cursor: pointer; }
+.map__pin circle { fill: var(--out); stroke: #fff; stroke-width: 2; }
+.map__pin.is-active circle { fill: var(--gold); }
+.map__panel { display: grid; gap: 12px; align-content: start; }
+@media (max-width: 720px) { .map { grid-template-columns: 1fr; } }
