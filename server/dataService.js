@@ -43,6 +43,14 @@ export function createDataService({ config, fetchImpl = fetch, now = () => Date.
     }
   }
 
+  function transformStandings(rawValue) {
+    const norm = normalizeStandings(rawValue);
+    const ranked = norm.groups.map((g) => ({ group: g.group, table: rankGroup(g.table) }));
+    const groups = ranked.map((g) => ({ group: g.group, table: advancementStatus(g.table) }));
+    const bestThirdIds = bestThirds(ranked.map((g) => g.table));
+    return { groups, bestThirdIds };
+  }
+
   return {
     async getMatches() {
       const { value, stale, updatedAt } = await load('matches', fetchMatches, SNAPSHOT.matches);
@@ -53,12 +61,12 @@ export function createDataService({ config, fetchImpl = fetch, now = () => Date.
     },
 
     async getStandings() {
-      const { value, stale, updatedAt } = await load('standings', fetchStandings, SNAPSHOT.standings);
-      const norm = normalizeStandings(value);
-      const ranked = norm.groups.map((g) => ({ group: g.group, table: rankGroup(g.table) }));
-      const groups = ranked.map((g) => ({ group: g.group, table: advancementStatus(g.table) }));
-      const bestThirdIds = bestThirds(ranked.map((g) => g.table));
-      return { updatedAt, stale, groups, bestThirdIds };
+      const loaded = await load('standings', fetchStandings, SNAPSHOT.standings);
+      try {
+        return { ...transformStandings(loaded.value), updatedAt: loaded.updatedAt, stale: loaded.stale };
+      } catch {
+        return { ...transformStandings(SNAPSHOT.standings), updatedAt: null, stale: true };
+      }
     },
 
     async getScorers() {

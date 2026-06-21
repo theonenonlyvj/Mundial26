@@ -63,6 +63,58 @@ describe('advancementStatus (mid-group)', () => {
   });
 });
 
+describe('advancementStatus (completed 3-way tie)', () => {
+  it('3rd place on GD is alive (not through) even when tied on points', () => {
+    // All played 3 — group is complete. a/b/c all 6 pts; ranked by GD: a(5)>b(2)>c(-1)
+    const ranked = rankGroup([
+      row({ id: 'a', points: 6, goalDifference: 5 }),
+      row({ id: 'b', points: 6, goalDifference: 2 }),
+      row({ id: 'c', points: 6, goalDifference: -1 }),
+      row({ id: 'd', points: 0 }),
+    ]);
+    const out = advancementStatus(ranked);
+    expect(out.find((r) => r.team.id === 'a').status).toBe('through');
+    expect(out.find((r) => r.team.id === 'b').status).toBe('through');
+    expect(out.find((r) => r.team.id === 'c').status).toBe('alive'); // 3rd on GD — NOT through
+    expect(out.find((r) => r.team.id === 'd').status).toBe('out');
+  });
+});
+
+describe('advancementStatus (incomplete — no false clinch when 2+ others can reach/tie)', () => {
+  it('team is alive (not through) when two or more others can still reach or tie its points', () => {
+    // a has 4pts, played:2; b and c each have 3pts, played:2 (maxReachable=6>=4); d has 0pts
+    // For a: canReachOrTie = [b(maxR=6>=4), c(maxR=6>=4)] → 2 → NOT through
+    // The conservative heuristic: if 2+ others can reach/tie you, you are not clinched
+    const ranked = rankGroup([
+      row({ id: 'a', played: 2, points: 4 }),
+      row({ id: 'b', played: 2, points: 3 }),
+      row({ id: 'c', played: 2, points: 3 }),
+      row({ id: 'd', played: 2, points: 0 }),
+    ]);
+    const out = advancementStatus(ranked);
+    // a: 2 others (b,c) can reach/tie 4pts → canReachOrTie=2 > 1 → not through
+    expect(out.find((r) => r.team.id === 'a').status).toBe('alive');
+    // b: a(maxR=7>=3), c(maxR=6>=3) can reach/tie → canReachOrTie=3 → not through
+    expect(out.find((r) => r.team.id === 'b').status).toBe('alive');
+  });
+});
+
+describe('bestThirds (small field)', () => {
+  it('returns all thirds when fewer than 8 groups exist', () => {
+    // Only 3 groups — bestThirds must return all 3 third-place teams, not pad to 8
+    const groups = Array.from({ length: 3 }, (_, g) =>
+      rankGroup([
+        row({ id: `${g}-1`, points: 9 }),
+        row({ id: `${g}-2`, points: 6 }),
+        row({ id: `${g}-3`, points: 3 }),
+        row({ id: `${g}-4`, points: 0 }),
+      ]),
+    );
+    const ids = bestThirds(groups);
+    expect(ids).toHaveLength(3);
+  });
+});
+
 describe('bestThirds', () => {
   it('returns the best 8 third-place team ids', () => {
     const groups = Array.from({ length: 12 }, (_, g) =>
