@@ -6,7 +6,8 @@ import { defineTerm } from '../explainer/glossary.js';
 import './GroupTable.css';
 
 function label(groupKey) {
-  return `Group ${groupKey.replace('GROUP_', '')}`;
+  const letter = String(groupKey).replace(/^group[\s_-]*/i, '').trim();
+  return `Group ${letter}`;
 }
 
 export default function GroupTable({ group }) {

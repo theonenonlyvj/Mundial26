@@ -4,7 +4,10 @@ import { groupMatchesByDay } from '../lib/groupByDate.js';
 import { dayKey } from '../lib/matchTime.js';
 import MatchSticker from '../components/MatchSticker.jsx';
 
-export default function TimelineView({ now = new Date().toISOString() }) {
+export default function TimelineView({
+  now = new Date().toISOString(),
+  timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+}) {
   const [matches, setMatches] = useState(null);
   const [error, setError] = useState(null);
 
@@ -19,8 +22,8 @@ export default function TimelineView({ now = new Date().toISOString() }) {
   if (error) return <section aria-label="Timeline">Couldn't load the schedule.</section>;
   if (!matches) return <section aria-label="Timeline">Loading the schedule…</section>;
 
-  const todayKey = dayKey(now);
-  const days = groupMatchesByDay(matches);
+  const todayKey = dayKey(now, timeZone);
+  const days = groupMatchesByDay(matches, timeZone);
 
   return (
     <section aria-label="Timeline">

@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getReference, getMatches } from '../api/client.js';
-import { project } from '../lib/projectMap.js';
 import MatchSticker from '../components/MatchSticker.jsx';
 import './MapView.css';
 
-const SIZE = { width: 1000, height: 1000 };
+const REGIONS = [
+  { name: 'West Coast', cities: ['seattle', 'vancouver', 'los-angeles', 'bay-area'] },
+  { name: 'Northeast', cities: ['toronto', 'boston', 'new-york', 'philadelphia'] },
+  { name: 'Central & South', cities: ['atlanta', 'dallas', 'houston', 'kansas-city', 'miami'] },
+  { name: 'Mexico', cities: ['mexico-city', 'guadalajara', 'monterrey'] },
+];
 
 export default function MapView() {
-  const [cities, setCities] = useState(null);
+  const [hostCities, setHostCities] = useState(null);
   const [matches, setMatches] = useState([]);
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState(null);
@@ -17,7 +21,7 @@ export default function MapView() {
     Promise.all([getReference(), getMatches()])
       .then(([ref, m]) => {
         if (!active) return;
-        setCities(ref.hostCities);
+        setHostCities(ref.hostCities);
         setMatches(m.matches);
       })
       .catch((e) => active && setError(e.message));
@@ -35,52 +39,64 @@ export default function MapView() {
     return map;
   }, [matches]);
 
-  if (error) return <section aria-label="Map">Couldn't load the map.</section>;
-  if (!cities) return <section aria-label="Map">Loading host cities…</section>;
+  if (error) return <section aria-label="Cities">Couldn't load city data.</section>;
+  if (!hostCities) return <section aria-label="Cities">Loading host cities…</section>;
 
-  const selectedCity = cities.find((c) => c.id === selected) ?? null;
+  const cityById = new Map(hostCities.map((c) => [c.id, c]));
+  const selectedCity = selected ? (cityById.get(selected) ?? null) : null;
   const selectedMatches = selected ? (byCity.get(selected) ?? []) : [];
 
   return (
-    <section aria-label="Map" className="map">
-      <svg className="map__svg" viewBox={`0 0 ${SIZE.width} ${SIZE.height}`} role="group" aria-label="Host cities map">
-        {cities.map((c) => {
-          const { x, y } = project(c.lat, c.lng, SIZE);
-          const active = c.id === selected;
+    <section aria-label="Cities" className="cities">
+      <div className="cities__browser">
+        {REGIONS.map((region) => {
+          const regionCities = region.cities
+            .map((id) => cityById.get(id))
+            .filter(Boolean);
+          if (regionCities.length === 0) return null;
           return (
-            <g
-              key={c.id}
-              className={`map__pin ${active ? 'is-active' : ''}`}
-              transform={`translate(${x}, ${y})`}
-              role="button"
-              aria-label={c.city}
-              tabIndex={0}
-              onClick={() => setSelected(c.id)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setSelected(c.id);
-                }
-              }}
-            >
-              <circle r="12" />
-              <text x="16" y="5" fontSize="20" fill="var(--ink)">{c.city}</text>
-            </g>
+            <div key={region.name} className="cities__region">
+              <h2 className="cities__region-name">{region.name}</h2>
+              <div className="cities__chips">
+                {regionCities.map((c) => {
+                  const matchCount = byCity.get(c.id)?.length ?? 0;
+                  const isActive = c.id === selected;
+                  return (
+                    <button
+                      key={c.id}
+                      className={`cities__chip ${isActive ? 'is-active' : ''}`}
+                      aria-pressed={isActive}
+                      onClick={() => setSelected(c.id)}
+                    >
+                      <span className="cities__chip-name">{c.city}</span>
+                      <span className="cities__chip-stadium">{c.stadium}</span>
+                      {matchCount > 0 && (
+                        <span className="cities__chip-count">{matchCount}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
-      </svg>
+      </div>
 
-      <div className="map__panel">
+      <div className="cities__panel">
         {selectedCity ? (
           <>
-            <h2>{selectedCity.city}</h2>
-            <p style={{ color: 'var(--muted)', marginTop: -8 }}>{selectedCity.stadium} · {selectedCity.country}</p>
-            {selectedMatches.length
-              ? selectedMatches.map((m) => <MatchSticker key={m.id} match={m} />)
-              : <p>No matches mapped to this city yet.</p>}
+            <div className="cities__panel-header">
+              <h2 className="cities__panel-city">{selectedCity.city}</h2>
+              <p className="cities__panel-meta">{selectedCity.stadium} · {selectedCity.country}</p>
+            </div>
+            <div className="cities__matches">
+              {selectedMatches.length > 0
+                ? selectedMatches.map((m) => <MatchSticker key={m.id} match={m} />)
+                : <p className="cities__no-matches">No matches for this city yet.</p>}
+            </div>
           </>
         ) : (
-          <p style={{ fontWeight: 700 }}>Pick a city on the map to see its matches. 📍</p>
+          <p className="cities__prompt">Pick a city to see its matches. 📍</p>
         )}
       </div>
     </section>

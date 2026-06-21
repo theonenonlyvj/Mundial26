@@ -6,10 +6,10 @@ function labelFor(key) {
   });
 }
 
-export function groupMatchesByDay(matches) {
+export function groupMatchesByDay(matches, timeZone) {
   const byDay = new Map();
   for (const match of matches) {
-    const key = dayKey(match.utcDate);
+    const key = dayKey(match.utcDate, timeZone);
     if (!byDay.has(key)) byDay.set(key, []);
     byDay.get(key).push(match);
   }
