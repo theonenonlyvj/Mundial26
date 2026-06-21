@@ -65,7 +65,6 @@ export default function MapView() {
                     <button
                       key={c.id}
                       className={`cities__chip ${isActive ? 'is-active' : ''}`}
-                      aria-label={c.city}
                       aria-pressed={isActive}
                       onClick={() => setSelected(c.id)}
                     >
