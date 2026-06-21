@@ -19,4 +19,16 @@ describe('GroupTable', () => {
     expect(screen.getAllByText(/Through/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Out/).length).toBeGreaterThan(0);
   });
+
+  it('renders the out row note text', () => {
+    render(<GroupTable group={group} />);
+    expect(screen.getByText(/Eliminated/)).toBeInTheDocument();
+  });
+
+  it('renders the GF value for each row', () => {
+    render(<GroupTable group={group} />);
+    // Mexico has goalsFor: 6, Canada has goalsFor: 1
+    expect(screen.getByText('6')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+  });
 });
