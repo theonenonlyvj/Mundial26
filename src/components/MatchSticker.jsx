@@ -6,15 +6,16 @@ import './MatchSticker.css';
 const LIVE = new Set(['IN_PLAY', 'PAUSED']);
 const PLAYED = new Set(['IN_PLAY', 'PAUSED', 'FINISHED']);
 
-export default function MatchSticker({ match, now = new Date().toISOString() }) {
+export default function MatchSticker({ match, now = new Date().toISOString(), featured = false }) {
   const isLive = LIVE.has(match.status);
   const showScore = PLAYED.has(match.status);
+  const rootClass = ['match', featured && 'match--featured'].filter(Boolean).join(' ');
   return (
-    <StickerCard foil={isLive}>
+    <StickerCard foil={isLive || featured} className={featured ? 'match--featured-card' : ''}>
       {match.home.crest && <div className="match__wash match__wash--l" style={{ backgroundImage: `url(${match.home.crest})` }} aria-hidden="true" />}
       {match.away.crest && <div className="match__wash match__wash--r" style={{ backgroundImage: `url(${match.away.crest})` }} aria-hidden="true" />}
-      <div className="match" style={{ position: 'relative', zIndex: 1 }}>
-        <TeamSticker team={match.home} />
+      <div className={rootClass} style={{ position: 'relative', zIndex: 1 }}>
+        <TeamSticker team={match.home} featured={featured} />
         <div className="match__mid">
           {showScore ? (
             <div className="match__score">
@@ -25,7 +26,7 @@ export default function MatchSticker({ match, now = new Date().toISOString() }) 
           )}
           {isLive && <span className="match__live">LIVE</span>}
         </div>
-        <TeamSticker team={match.away} align="right" />
+        <TeamSticker team={match.away} align="right" featured={featured} />
       </div>
       {match.city && <div className="match__city" style={{ position: 'relative', zIndex: 1 }}>{match.city.city}</div>}
       {match.channels && (
