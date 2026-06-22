@@ -42,9 +42,10 @@
   font-size: 16px;
 }
 
-/* Bigger team names on featured */
+/* Bigger team names on featured (one notch below 20px so single words like
+   "Argentina" keep one line when the side column is squeezed by the big score). */
 .match--featured .team__name {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 /* Bigger medallion badges on featured */
@@ -56,4 +57,15 @@
 .match--featured .team__badge img {
   width: 46px;
   height: 46px;
+}
+
+/* Narrow viewports: shrink the hero so names stay on one line instead of
+   breaking mid-word. The 3-column score layout is tight on small screens. */
+@media (max-width: 640px) {
+  .match--featured { gap: 6px; }
+  .match--featured .team__name { font-size: 15px; }
+  .match--featured .match__score { font-size: 38px; }
+  .match--featured .match__mid { min-width: 60px; }
+  .match--featured .team__badge,
+  .match--featured .team__badge img { width: 40px; height: 40px; }
 }
