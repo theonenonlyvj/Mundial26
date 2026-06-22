@@ -11,4 +11,14 @@ describe('api client', () => {
     const data = await getMatches();
     expect(data.url).toBe('/api/matches');
   });
+
+  it('uses a same-origin path when VITE_API_URL is unset (dev/test default)', async () => {
+    let called;
+    vi.stubGlobal('fetch', async (url) => {
+      called = url;
+      return { ok: true, json: async () => ({}) };
+    });
+    await getMatches();
+    expect(called).toBe('/api/matches');
+  });
 });
