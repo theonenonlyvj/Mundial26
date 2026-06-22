@@ -1,14 +1,18 @@
-# Split deploy: an always-on static site (the SPA, served from Render's CDN) +
-# a free Node web service for the API. The static site never spins down, so the
-# page loads instantly; only the API cold-starts (~30s), which the in-app
-# cold-start banner covers. See DEPLOY.md for the dashboard wiring steps.
+# Non-destructive split. The existing `mundial26` web service is kept UNCHANGED
+# in name, so a blueprint sync updates it in place and its public URL
+# (mundial26-y28p.onrender.com) stays alive for everyone it was shared with.
+# A new always-on static site is added ALONGSIDE it as the fast URL to share next.
 services:
-  # --- API (free web service; cold-starts after ~15 min idle) ---
+  # --- Existing combined app (KEEP: preserves the -y28p URL already shared) ---
+  # Still serves the full SPA + API. Cold-starts as before; nothing regresses.
+  # Also acts as the API origin for the static site below.
   - type: web
-    name: mundial26-api
+    name: mundial26
     runtime: node
     plan: free
-    buildCommand: npm install
+    # --include=dev: NODE_ENV=production (below) makes npm skip devDependencies,
+    # but vite/react/build plugins live there and are needed to build the SPA.
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     envVars:
       - key: FOOTBALL_DATA_API_KEY
@@ -18,14 +22,15 @@ services:
       # Pin Node >= 20.12 so `--env-file-if-exists` (used in npm start) is supported.
       - key: NODE_VERSION
         value: "22"
-      # The static-site origin allowed to call this API (set in the dashboard
-      # once the static site has a URL). Enables CORS for that one origin.
+      # The static-site origin allowed to call this API cross-origin (set in the
+      # dashboard once the static site has a URL). Enables CORS for that one origin.
       - key: CLIENT_ORIGIN
         sync: false
 
-  # --- SPA (static site; CDN, always-on, no spin-down) ---
+  # --- New SPA static site (CDN, always-on, no spin-down) ---
+  # The fast URL to share going forward. Calls the web service above for data.
   - type: static
-    name: mundial26
+    name: mundial26-app
     # --include=dev so vite/react build plugins (devDependencies) are installed.
     buildCommand: npm install --include=dev && npm run build
     staticPublishPath: ./dist
@@ -34,7 +39,8 @@ services:
         source: /*
         destination: /index.html
     envVars:
-      # Absolute URL of the API service above, baked into the build (set in the
-      # dashboard once the API has a URL). Unset locally -> dev uses the vite proxy.
+      # Absolute URL of the web service above, baked into the build (set in the
+      # dashboard). Unset locally -> dev uses the vite proxy. e.g.
+      # https://mundial26-y28p.onrender.com
       - key: VITE_API_URL
         sync: false

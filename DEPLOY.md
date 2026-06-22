@@ -1,45 +1,49 @@
-# Deploying Mundial26 (split: static SPA + API)
+# Deploying Mundial26 (non-destructive split)
 
-The blueprint (`render.yaml`) defines **two** services so the page loads instantly:
+The old URL (`mundial26-y28p.onrender.com`) was already shared, so we **keep it**.
+The blueprint keeps the existing `mundial26` web service unchanged and adds an
+always-on static site beside it:
 
-| Service          | Type   | What it is                         | Spins down? |
-|------------------|--------|------------------------------------|-------------|
-| `mundial26`      | static | the Vite SPA, served from the CDN  | **never**   |
-| `mundial26-api`  | web    | the Express API (`/api/*`)         | after ~15m idle (cold-start ~30s) |
+| Service          | Type   | What it is                              | Spins down? | URL |
+|------------------|--------|-----------------------------------------|-------------|-----|
+| `mundial26`      | web    | existing combined app (SPA + API)       | after ~15m idle | **`-y28p` (unchanged, still works)** |
+| `mundial26-app`  | static | the SPA on the CDN, calls the API above | **never**   | new — **share this one going forward** |
 
-When the API is cold, the SPA still loads instantly and shows the in-app
-cold-start banner until scores arrive. No keep-alive ping (stays within Render's ToS).
+Visitors to the new static URL get an instant page; while the API is cold the
+in-app banner shows, then scores arrive (~30s). Old `-y28p` links keep working
+exactly as before. No keep-alive ping (within Render's ToS).
 
-## One-time setup (Render dashboard)
+## Setup (Render dashboard)
 
-The two services reference each other's URLs, so it's a two-pass wiring:
-
-1. **Sync the blueprint.** Push `render.yaml` to `main`, then in Render → Blueprints,
-   sync. It creates `mundial26-api` (web) and `mundial26` (static).
-   - The old single `mundial26` web service can't change type in place — delete it
-     and let the blueprint create the new pair. (This changes the public URL to the
-     **static** site's URL — that becomes the address you share.)
-2. **First build** runs with env vars still empty. That's fine; we fix it next.
-3. **Grab the URLs** Render assigns, e.g.
-   - API:    `https://mundial26-api.onrender.com`
-   - SPA:    `https://mundial26.onrender.com`
-4. **Set env vars:**
-   - On `mundial26-api`: `FOOTBALL_DATA_API_KEY` = (the key) and
-     `CLIENT_ORIGIN` = the **SPA** URL (e.g. `https://mundial26.onrender.com`).
-   - On `mundial26` (static): `VITE_API_URL` = the **API** URL
-     (e.g. `https://mundial26-api.onrender.com`).
-5. **Redeploy the static site** (Manual Deploy → Clear build cache & deploy).
+1. **Sync the blueprint.** Render → Blueprints → sync. This is **non-destructive**:
+   it updates the existing `mundial26` web service in place (URL preserved) and
+   **creates** `mundial26-app` (static). Nothing is deleted.
+2. **Grab the static URL** Render assigns, e.g. `https://mundial26-app.onrender.com`.
+   The API URL is your existing `https://mundial26-y28p.onrender.com`.
+3. **Set env vars:**
+   - On `mundial26` (web): add `CLIENT_ORIGIN` = the **static** URL
+     (e.g. `https://mundial26-app.onrender.com`). `FOOTBALL_DATA_API_KEY` is
+     already set from the original deploy — leave it.
+   - On `mundial26-app` (static): `VITE_API_URL` = the existing **web** URL
+     (`https://mundial26-y28p.onrender.com`).
+4. **Redeploy the static site** (Manual Deploy → Clear build cache & deploy).
    `VITE_API_URL` is baked in at build time, so the SPA must rebuild after it's set.
-   The API redeploys automatically to pick up `CLIENT_ORIGIN`.
+   The web service redeploys automatically to pick up `CLIENT_ORIGIN`.
 
 ## Verify
 
-- `curl -i https://mundial26-api.onrender.com/api/health` → `200`, and includes
-  `Access-Control-Allow-Origin: <SPA URL>`.
-- Open the SPA URL: page paints immediately; on a cold API the gold banner shows,
-  then scores replace it within ~30s.
+- `curl -i https://mundial26-y28p.onrender.com/api/health` → `200`, and once
+  `CLIENT_ORIGIN` is set, includes `Access-Control-Allow-Origin: <static URL>`.
+- Open the static URL: page paints immediately; on a cold API the gold banner
+  shows, then scores replace it within ~30s.
+- Open the old `-y28p` URL: still serves the full app as before.
+
+## Optional later
+
+Make the old `-y28p` URL forward to the fast static site (one cold-start on first
+hit after idle, then instant). Say the word and I'll wire the redirect.
 
 ## Local dev (unchanged)
 
-`npm run dev` — vite serves the SPA and proxies `/api` to the local Express on
-:3000 (`VITE_API_URL` unset → relative path). No CORS needed locally.
+`npm run dev` — vite serves the SPA and proxies `/api` to local Express on :3000
+(`VITE_API_URL` unset → relative path). No CORS needed locally.
