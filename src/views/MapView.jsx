@@ -48,6 +48,30 @@ export default function MapView() {
 
   return (
     <section aria-label="Cities" className="cities">
+      <div className="cities__picker-mobile">
+        <label className="cities__select-label" htmlFor="city-select">Jump to a city</label>
+        <select
+          id="city-select"
+          className="cities__select"
+          value={selected ?? ''}
+          onChange={(e) => setSelected(e.target.value || null)}
+        >
+          <option value="">Choose a city…</option>
+          {REGIONS.map((region) => {
+            const regionCities = region.cities.map((id) => cityById.get(id)).filter(Boolean);
+            if (regionCities.length === 0) return null;
+            return (
+              <optgroup key={region.name} label={region.name}>
+                {regionCities.map((c) => {
+                  const n = byCity.get(c.id)?.length ?? 0;
+                  return <option key={c.id} value={c.id}>{c.city}{n ? ` (${n})` : ''}</option>;
+                })}
+              </optgroup>
+            );
+          })}
+        </select>
+      </div>
+
       <div className="cities__browser">
         {REGIONS.map((region) => {
           const regionCities = region.cities

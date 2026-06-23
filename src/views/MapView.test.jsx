@@ -42,8 +42,16 @@ describe('MapView', () => {
   it('shows the default prompt before any city is selected', async () => {
     stubFetch();
     render(<MapView />);
-    await waitFor(() => expect(screen.getByText(/Mexico City/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /Mexico City/ })).toBeInTheDocument());
     expect(screen.getByText(/pick a city/i)).toBeInTheDocument();
+  });
+
+  it('selecting a city from the mobile dropdown reveals its matches', async () => {
+    stubFetch();
+    render(<MapView />);
+    await waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument());
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'mexico-city' } });
+    expect(screen.getAllByText(/Estadio Azteca/).length).toBeGreaterThan(0);
   });
 
   it('clicking a city button reveals its matches', async () => {

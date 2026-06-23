@@ -4,6 +4,7 @@ import TodayView from './views/TodayView.jsx';
 import StandingsView from './views/StandingsView.jsx';
 import TimelineView from './views/TimelineView.jsx';
 import MapView from './views/MapView.jsx';
+import ScorersView from './views/ScorersView.jsx';
 import HowItWorks from './explainer/HowItWorks.jsx';
 import ColdStartBanner from './components/ColdStartBanner.jsx';
 
@@ -11,6 +12,7 @@ const VIEWS = [
   { key: 'today', label: 'Today' },
   { key: 'timeline', label: 'Timeline' },
   { key: 'map', label: 'Cities' },
+  { key: 'scorers', label: 'Scorers' },
   { key: 'standings', label: 'Standings' },
 ];
 
@@ -39,6 +41,7 @@ export default function App() {
         {view === 'today' && <TodayView />}
         {view === 'timeline' && <TimelineView />}
         {view === 'map' && <MapView />}
+        {view === 'scorers' && <ScorersView />}
         {view === 'standings' && <StandingsView />}
       </main>
       <HowItWorks open={showHelp} onClose={() => setShowHelp(false)} />
