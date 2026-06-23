@@ -28,6 +28,21 @@ export function normalizeMatch(m) {
   };
 }
 
+export function normalizeScorer(s) {
+  const team = normalizeTeam(s?.team);
+  return {
+    // For the World Cup the player's club here IS their national team, so the
+    // team crest doubles as the country flag.
+    name: s?.player?.name ?? 'Unknown',
+    nationality: s?.player?.nationality ?? team.name,
+    team,
+    goals: s?.goals ?? 0,
+    assists: s?.assists ?? null,
+    penalties: s?.penalties ?? null,
+    playedMatches: s?.playedMatches ?? null,
+  };
+}
+
 export function normalizeStandings(payload) {
   const groups = (payload.standings ?? [])
     .filter((s) => s.type === 'TOTAL')

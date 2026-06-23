@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createCache, createCachedFetcher } from './cache.js';
 import { createFootballDataClient } from './footballDataClient.js';
-import { normalizeMatch, normalizeStandings } from './normalize.js';
+import { normalizeMatch, normalizeStandings, normalizeScorer } from './normalize.js';
 import { rankGroup, advancementStatus, bestThirds } from './standings.js';
 import { HOST_CITIES } from './data/hostCities.js';
 import { cityIdForMatch } from './data/matchVenues.js';
@@ -82,7 +82,8 @@ export function createDataService({ config, fetchImpl = fetch, now = () => Date.
 
     async getScorers() {
       const { value, stale, updatedAt } = await load('scorers', fetchScorers, { scorers: [] });
-      return { updatedAt, stale, scorers: value.scorers ?? [] };
+      const scorers = (value.scorers ?? []).map(normalizeScorer);
+      return { updatedAt, stale, scorers };
     },
   };
 }

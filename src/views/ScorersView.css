@@ -1,0 +1,91 @@
+.scorers { max-width: 720px; }
+
+.scorers__eyebrow {
+  font-family: var(--font-display);
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  font-size: 1rem;
+}
+.scorers__title { margin: 2px 0 4px; }
+.scorers__sub {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0 0 16px;
+  max-width: 58ch;
+}
+.scorers__empty { font-weight: 700; color: var(--muted); }
+
+.scorers__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.scorer {
+  display: grid;
+  grid-template-columns: 2ch 44px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--paper);
+  border: 2px solid var(--paper-edge);
+  border-radius: var(--sticker-radius);
+}
+.scorer--leader {
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--paper) 82%, var(--gold));
+  box-shadow: 0 0 0 1px var(--gold);
+}
+
+.scorer__rank {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--muted);
+  text-align: center;
+}
+.scorer--leader .scorer__rank { color: #9a7b22; font-size: 1.5rem; }
+
+.scorer__badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--paper-edge);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 0 0 2px var(--gold), 0 0 0 4px var(--paper);
+}
+.scorer__badge img { width: 100%; height: 100%; object-fit: cover; }
+
+.scorer__who { display: flex; flex-direction: column; min-width: 0; }
+.scorer__name {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.15;
+  overflow-wrap: break-word;
+}
+.scorer__country { font-size: 0.78rem; color: var(--muted); }
+
+.scorer__stats { display: flex; flex-direction: column; align-items: flex-end; }
+.scorer__goalline { display: flex; align-items: baseline; gap: 5px; }
+.scorer__goals {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  line-height: 1;
+}
+.scorer--leader .scorer__goals { color: #7a5e12; }
+.scorer__goals-label { font-size: 0.75rem; color: var(--muted); }
+.scorer__played { font-size: 0.72rem; color: var(--muted); margin-top: 2px; white-space: nowrap; }
+
+@media (max-width: 520px) {
+  .scorer { grid-template-columns: 1.6ch 36px 1fr auto; gap: 8px; padding: 8px 10px; }
+  .scorer__badge { width: 36px; height: 36px; }
+  .scorer__goals { font-size: 1.5rem; }
+  .scorer__played { display: none; }
+}

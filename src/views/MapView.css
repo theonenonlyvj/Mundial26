@@ -5,6 +5,30 @@
   align-items: start;
 }
 
+/* Compact city picker — mobile only (the region chip browser is roomy on
+   desktop but eats too much vertical space on a phone). */
+.cities__picker-mobile { display: none; }
+.cities__select-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.cities__select {
+  width: 100%;
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--paper-edge);
+  border-radius: var(--sticker-radius);
+  appearance: auto;
+}
+.cities__select:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
 .cities__browser {
   display: grid;
   gap: 16px;
@@ -117,6 +141,9 @@
   .cities {
     grid-template-columns: 1fr;
   }
+  /* Swap the tall region browser for the compact dropdown. */
+  .cities__browser { display: none; }
+  .cities__picker-mobile { display: grid; gap: 6px; }
   .cities__chip-stadium {
     max-width: 100px;
   }

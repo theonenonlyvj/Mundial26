@@ -9,6 +9,7 @@ beforeEach(() => vi.stubGlobal('fetch', async (url) => ({
   json: async () => {
     if (url.includes('standings')) return { groups: [], bestThirdIds: [] };
     if (url.includes('reference')) return { hostCities: [] };
+    if (url.includes('scorers')) return { scorers: [] };
     return { matches: [] };
   },
 })));
@@ -24,6 +25,12 @@ describe('App', () => {
     await act(async () => { render(<App />); });
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Standings' })); });
     expect(screen.getByRole('region', { name: /standings/i })).toBeInTheDocument();
+  });
+
+  it('has a Scorers tab that opens the leaderboard', async () => {
+    await act(async () => { render(<App />); });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Scorers' })); });
+    expect(screen.getByRole('region', { name: /scorers/i })).toBeInTheDocument();
   });
 
   it('opens the How It Works modal', async () => {
