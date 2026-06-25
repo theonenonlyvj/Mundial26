@@ -1,9 +1,11 @@
 import { pickMatchToWatch } from '../lib/watch.js';
+import { advancementForMatch } from '../lib/advancement.js';
 import MatchSticker from './MatchSticker.jsx';
 
-export default function WhatToWatch({ matches }) {
-  const pick = pickMatchToWatch(matches);
+export default function WhatToWatch({ matches, now = new Date().toISOString(), advByTeam = null }) {
+  const pick = pickMatchToWatch(matches, now);
   if (!pick) return null;
+  const advancement = advancementForMatch(pick.match, advByTeam);
   return (
     <div className="watch" style={{ marginBottom: 16 }}>
       <div style={{
@@ -17,7 +19,7 @@ export default function WhatToWatch({ matches }) {
       }}>
         ⭐ What to watch — {pick.reason}
       </div>
-      <MatchSticker match={pick.match} featured />
+      <MatchSticker match={pick.match} now={now} featured advancement={advancement} />
     </div>
   );
 }

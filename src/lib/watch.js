@@ -1,27 +1,27 @@
 const LIVE = new Set(['IN_PLAY', 'PAUSED']);
+const FINISHED = new Set(['FINISHED', 'AWARDED']);
 
-function score(match) {
-  if (LIVE.has(match.status)) return 3;
-  if (match.stage && match.stage !== 'GROUP_STAGE') return 2;
-  return 1;
-}
+const byKickoff = (a, b) => (a.utcDate < b.utcDate ? -1 : a.utcDate > b.utcDate ? 1 : 0);
 
-const REASONS = {
-  3: 'Live right now',
-  2: 'Knockout — win or go home',
-  1: 'Group-stage clash',
-};
+// The hero should always be what's LIVE or NEXT — never a random earlier game.
+// Priority: a live match → else the next upcoming kickoff → else the latest result.
+export function pickMatchToWatch(matches, now = new Date().toISOString()) {
+  if (!matches || !matches.length) return null;
 
-export function pickMatchToWatch(matches) {
-  if (!matches.length) return null;
-  let best = null;
-  let bestScore = -1;
-  for (const match of matches) {
-    const s = score(match);
-    if (s > bestScore || (s === bestScore && match.utcDate < best.utcDate)) {
-      best = match;
-      bestScore = s;
-    }
+  const live = matches.filter((m) => LIVE.has(m.status)).sort(byKickoff);
+  if (live.length) return { match: live[0], reason: 'Live right now' };
+
+  const upcoming = matches
+    .filter((m) => !LIVE.has(m.status) && !FINISHED.has(m.status) && m.utcDate >= now)
+    .sort(byKickoff);
+  if (upcoming.length) {
+    const next = upcoming[0];
+    const knockout = next.stage && next.stage !== 'GROUP_STAGE';
+    return { match: next, reason: knockout ? 'Up next — win or go home' : 'Up next' };
   }
-  return { match: best, reason: REASONS[bestScore] };
+
+  const finished = matches.filter((m) => FINISHED.has(m.status)).sort((a, b) => byKickoff(b, a));
+  if (finished.length) return { match: finished[0], reason: 'Latest result' };
+
+  return null;
 }
