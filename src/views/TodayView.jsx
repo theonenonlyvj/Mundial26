@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react';
 import { getMatches } from '../api/client.js';
 import { bucketMatches } from '../lib/matchTime.js';
+import { advancementForMatch } from '../lib/advancement.js';
+import { useAdvByTeam } from '../hooks/useAdvByTeam.js';
 import MatchSticker from '../components/MatchSticker.jsx';
 import WhatToWatch from '../components/WhatToWatch.jsx';
 
-function Strip({ title, matches }) {
+function Strip({ title, matches, now, advByTeam }) {
   if (!matches.length) return null;
   return (
     <section style={{ marginTop: 20 }}>
       <h2>{title}</h2>
       <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-        {matches.map((m) => <MatchSticker key={m.id} match={m} />)}
+        {matches.map((m) => (
+          <MatchSticker key={m.id} match={m} now={now} advancement={advancementForMatch(m, advByTeam)} />
+        ))}
       </div>
     </section>
   );
@@ -22,6 +26,7 @@ export default function TodayView({
 }) {
   const [matches, setMatches] = useState(null);
   const [error, setError] = useState(null);
+  const advByTeam = useAdvByTeam();
 
   useEffect(() => {
     let active = true;
@@ -35,19 +40,18 @@ export default function TodayView({
   if (!matches) return <section aria-label="Today">Loading today's matches…</section>;
 
   const { today, recent, upcoming } = bucketMatches(matches, now, timeZone);
-  const heroPool = today.length ? today : upcoming;
 
   return (
     <section aria-label="Today">
-      <WhatToWatch matches={heroPool} />
+      <WhatToWatch matches={matches} now={now} advByTeam={advByTeam} />
       <p style={{ fontSize: '0.8em', color: 'var(--muted, #888)', marginTop: 4 }}>🕐 Kickoff times shown in your local time zone.</p>
       {today.length ? (
-        <Strip title="On Today" matches={today} />
+        <Strip title="On Today" matches={today} now={now} advByTeam={advByTeam} />
       ) : (
         <p style={{ fontWeight: 700 }}>No matches today — here's what's coming up next. ⤵️</p>
       )}
-      <Strip title="Coming Up" matches={upcoming} />
-      <Strip title="Recent Results" matches={recent} />
+      <Strip title="Coming Up" matches={upcoming} now={now} advByTeam={advByTeam} />
+      <Strip title="Recent Results" matches={recent} now={now} advByTeam={advByTeam} />
     </section>
   );
 }

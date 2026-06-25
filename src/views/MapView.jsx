@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getReference, getMatches } from '../api/client.js';
+import { advancementForMatch } from '../lib/advancement.js';
+import { useAdvByTeam } from '../hooks/useAdvByTeam.js';
 import MatchSticker from '../components/MatchSticker.jsx';
 import './MapView.css';
 
@@ -15,6 +17,7 @@ export default function MapView() {
   const [matches, setMatches] = useState([]);
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState(null);
+  const advByTeam = useAdvByTeam();
 
   useEffect(() => {
     let active = true;
@@ -115,7 +118,7 @@ export default function MapView() {
             </div>
             <div className="cities__matches">
               {selectedMatches.length > 0
-                ? selectedMatches.map((m) => <MatchSticker key={m.id} match={m} />)
+                ? selectedMatches.map((m) => <MatchSticker key={m.id} match={m} advancement={advancementForMatch(m, advByTeam)} />)
                 : <p className="cities__no-matches">No matches for this city yet.</p>}
             </div>
           </>
