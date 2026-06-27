@@ -2,7 +2,7 @@ import { pickMatchToWatch } from '../lib/watch.js';
 import { advancementForMatch } from '../lib/advancement.js';
 import MatchSticker from './MatchSticker.jsx';
 
-export default function WhatToWatch({ matches, now = new Date().toISOString(), advByTeam = null }) {
+export default function WhatToWatch({ matches, now = new Date().toISOString(), advByTeam = null, koDisplay = null }) {
   const pick = pickMatchToWatch(matches, now);
   if (!pick) return null;
   const advancement = advancementForMatch(pick.match, advByTeam);
@@ -19,7 +19,7 @@ export default function WhatToWatch({ matches, now = new Date().toISOString(), a
       }}>
         ⭐ What to watch — {pick.reason}
       </div>
-      <MatchSticker match={pick.match} now={now} featured advancement={advancement} />
+      <MatchSticker match={pick.match} now={now} featured advancement={advancement} knockout={koDisplay?.get(pick.match.id) ?? null} />
     </div>
   );
 }

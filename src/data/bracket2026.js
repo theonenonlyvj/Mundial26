@@ -11,20 +11,20 @@
 // slot's actual team is read from the live match once anchored).
 export const R32_SLOTS = {
   73: [{ kind: 'RU', group: 'A' }, { kind: 'RU', group: 'B' }],
-  74: [{ kind: 'W', group: 'E' }, { kind: '3rd' }],
+  74: [{ kind: 'W', group: 'E' }, { kind: '3rd', groups: 'A/B/C/D/F' }],
   75: [{ kind: 'W', group: 'F' }, { kind: 'RU', group: 'C' }],
   76: [{ kind: 'W', group: 'C' }, { kind: 'RU', group: 'F' }],
-  77: [{ kind: 'W', group: 'I' }, { kind: '3rd' }],
+  77: [{ kind: 'W', group: 'I' }, { kind: '3rd', groups: 'C/D/F/G/H' }],
   78: [{ kind: 'RU', group: 'E' }, { kind: 'RU', group: 'I' }],
-  79: [{ kind: 'W', group: 'A' }, { kind: '3rd' }],
-  80: [{ kind: 'W', group: 'L' }, { kind: '3rd' }],
-  81: [{ kind: 'W', group: 'D' }, { kind: '3rd' }],
-  82: [{ kind: 'W', group: 'G' }, { kind: '3rd' }],
+  79: [{ kind: 'W', group: 'A' }, { kind: '3rd', groups: 'C/E/F/H/I' }],
+  80: [{ kind: 'W', group: 'L' }, { kind: '3rd', groups: 'E/H/I/J/K' }],
+  81: [{ kind: 'W', group: 'D' }, { kind: '3rd', groups: 'B/E/F/I/J' }],
+  82: [{ kind: 'W', group: 'G' }, { kind: '3rd', groups: 'A/E/H/I/J' }],
   83: [{ kind: 'RU', group: 'K' }, { kind: 'RU', group: 'L' }],
   84: [{ kind: 'W', group: 'H' }, { kind: 'RU', group: 'J' }],
-  85: [{ kind: 'W', group: 'B' }, { kind: '3rd' }],
+  85: [{ kind: 'W', group: 'B' }, { kind: '3rd', groups: 'E/F/G/I/J' }],
   86: [{ kind: 'W', group: 'J' }, { kind: 'RU', group: 'H' }],
-  87: [{ kind: 'W', group: 'K' }, { kind: '3rd' }],
+  87: [{ kind: 'W', group: 'K' }, { kind: '3rd', groups: 'D/E/I/J/L' }],
   88: [{ kind: 'RU', group: 'D' }, { kind: 'RU', group: 'G' }],
 };
 

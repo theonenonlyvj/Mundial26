@@ -1,5 +1,5 @@
-import { getStandings, getMatches } from '../api/client.js';
 import { useLiveData } from '../hooks/useLiveData.js';
+import { fetchStandingsBundle } from '../api/fetchers.js';
 import GroupTable from '../components/GroupTable.jsx';
 import Legend from '../components/Legend.jsx';
 import TiebreakerExplainer from '../components/TiebreakerExplainer.jsx';
@@ -9,8 +9,7 @@ import FreshnessNote from '../components/FreshnessNote.jsx';
 import { defineTerm } from '../explainer/glossary.js';
 
 export default function StandingsView() {
-  const { data, dataAsOf, error } = useLiveData('standings', () =>
-    Promise.all([getStandings(), getMatches()]).then(([s, m]) => ({ standings: s, matches: m.matches, stale: s.stale ?? m.stale })));
+  const { data, dataAsOf, error } = useLiveData('standings', fetchStandingsBundle);
   const standings = data?.standings ?? null;
   const matches = data?.matches ?? [];
 
