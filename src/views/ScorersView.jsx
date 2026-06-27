@@ -1,21 +1,14 @@
-import { useEffect, useState } from 'react';
 import { getScorers } from '../api/client.js';
+import { useLiveData } from '../hooks/useLiveData.js';
 import { rankScorers } from '../lib/leaderboard.js';
+import FreshnessNote from '../components/FreshnessNote.jsx';
 import './ScorersView.css';
 
 export default function ScorersView() {
-  const [scorers, setScorers] = useState(null);
-  const [error, setError] = useState(null);
+  const { data, dataAsOf, error } = useLiveData('scorers', getScorers);
+  const scorers = data ? rankScorers(data.scorers ?? []) : null;
 
-  useEffect(() => {
-    let active = true;
-    getScorers()
-      .then((d) => active && setScorers(rankScorers(d.scorers ?? [])))
-      .catch((e) => active && setError(e.message));
-    return () => { active = false; };
-  }, []);
-
-  if (error) return <section aria-label="Scorers" className="scorers"><p className="scorers__empty">Couldn't load top scorers right now.</p></section>;
+  if (!scorers && error) return <section aria-label="Scorers" className="scorers"><p className="scorers__empty">Couldn't load top scorers right now.</p></section>;
   if (!scorers) return <section aria-label="Scorers" className="scorers"><p className="scorers__empty">Loading top scorers…</p></section>;
 
   return (
@@ -26,6 +19,7 @@ export default function ScorersView() {
         The race for most goals at the tournament. Whoever finishes on top wins the
         Golden Boot — the award for the leading scorer.
       </p>
+      <FreshnessNote at={dataAsOf} />
 
       {scorers.length === 0 ? (
         <p className="scorers__empty">No goals yet — check back once the matches kick off. ⚽</p>

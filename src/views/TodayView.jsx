@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
 import { getMatches } from '../api/client.js';
+import { useLiveData } from '../hooks/useLiveData.js';
 import { bucketMatches } from '../lib/matchTime.js';
 import { advancementForMatch } from '../lib/advancement.js';
 import { useAdvByTeam } from '../hooks/useAdvByTeam.js';
 import MatchSticker from '../components/MatchSticker.jsx';
 import WhatToWatch from '../components/WhatToWatch.jsx';
+import FreshnessNote from '../components/FreshnessNote.jsx';
 
 function Strip({ title, matches, now, advByTeam }) {
   if (!matches.length) return null;
@@ -24,19 +25,11 @@ export default function TodayView({
   now = new Date().toISOString(),
   timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
 }) {
-  const [matches, setMatches] = useState(null);
-  const [error, setError] = useState(null);
   const advByTeam = useAdvByTeam();
+  const { data, dataAsOf, error } = useLiveData('matches', getMatches);
+  const matches = data?.matches ?? null;
 
-  useEffect(() => {
-    let active = true;
-    getMatches()
-      .then((data) => active && setMatches(data.matches))
-      .catch((e) => active && setError(e.message));
-    return () => { active = false; };
-  }, []);
-
-  if (error) return <section aria-label="Today">Couldn't load matches right now.</section>;
+  if (!matches && error) return <section aria-label="Today">Couldn't load matches right now.</section>;
   if (!matches) return <section aria-label="Today">Loading today's matches…</section>;
 
   const { today, recent, upcoming } = bucketMatches(matches, now, timeZone);
@@ -44,6 +37,7 @@ export default function TodayView({
   return (
     <section aria-label="Today">
       <WhatToWatch matches={matches} now={now} advByTeam={advByTeam} />
+      <FreshnessNote at={dataAsOf} />
       <p style={{ fontSize: '0.8em', color: 'var(--muted, #888)', marginTop: 4 }}>🕐 Kickoff times shown in your local time zone.</p>
       {today.length ? (
         <Strip title="On Today" matches={today} now={now} advByTeam={advByTeam} />

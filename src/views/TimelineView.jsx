@@ -1,28 +1,22 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { getMatches } from '../api/client.js';
+import { useLiveData } from '../hooks/useLiveData.js';
 import { groupMatchesByDay } from '../lib/groupByDate.js';
 import { dayKey } from '../lib/matchTime.js';
 import { advancementForMatch } from '../lib/advancement.js';
 import { useAdvByTeam } from '../hooks/useAdvByTeam.js';
 import MatchSticker from '../components/MatchSticker.jsx';
+import FreshnessNote from '../components/FreshnessNote.jsx';
 import './TimelineView.css';
 
 export default function TimelineView({
   now = new Date().toISOString(),
   timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
 }) {
-  const [matches, setMatches] = useState(null);
-  const [error, setError] = useState(null);
   const advByTeam = useAdvByTeam();
+  const { data, dataAsOf, error } = useLiveData('matches', getMatches);
+  const matches = data?.matches ?? null;
   const anchorRef = useRef(null);
-
-  useEffect(() => {
-    let active = true;
-    getMatches()
-      .then((data) => active && setMatches(data.matches))
-      .catch((e) => active && setError(e.message));
-    return () => { active = false; };
-  }, []);
 
   // On open, jump to today's matches (or the next day with games) so you land in
   // the thick of the action, with earlier days above and later days below.
@@ -32,7 +26,7 @@ export default function TimelineView({
     if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'center' });
   }, [matches]);
 
-  if (error) return <section aria-label="Timeline">Couldn't load the schedule.</section>;
+  if (!matches && error) return <section aria-label="Timeline">Couldn't load the schedule.</section>;
   if (!matches) return <section aria-label="Timeline">Loading the schedule…</section>;
 
   const todayKey = dayKey(now, timeZone);
@@ -44,6 +38,7 @@ export default function TimelineView({
 
   return (
     <section aria-label="Timeline">
+      <FreshnessNote at={dataAsOf} />
       <p className="timeline__hint">Scroll ↕ — earlier days are up, upcoming days are down.</p>
       {days.map((day) => {
         const isToday = day.dayKey === todayKey;
