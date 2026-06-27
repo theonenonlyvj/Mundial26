@@ -43,4 +43,23 @@ describe('MatchSticker', () => {
     render(<MatchSticker match={{ ...base, status: 'SCHEDULED', utcDate: '2026-07-21T20:00:00Z', score: { home: null, away: null } }} now={now} />);
     expect(screen.getByTestId('kickoff').textContent).toMatch(/^[A-Za-z]{3} /);
   });
+
+  it('tags the stage (group or knockout round)', () => {
+    const { rerender } = render(<MatchSticker match={{ ...base, status: 'SCHEDULED', stage: 'GROUP_STAGE', group: 'GROUP_B', utcDate: '2026-06-15T18:00:00Z', score: {} }} />);
+    expect(screen.getByText('Group B')).toBeInTheDocument();
+    rerender(<MatchSticker match={{ ...base, status: 'SCHEDULED', stage: 'LAST_16', utcDate: '2026-07-05T18:00:00Z', score: {} }} />);
+    expect(screen.getByText('Round of 16')).toBeInTheDocument();
+  });
+
+  it('hides the stage tag when showStage is false', () => {
+    render(<MatchSticker showStage={false} match={{ ...base, status: 'SCHEDULED', stage: 'LAST_16', utcDate: '2026-07-05T18:00:00Z', score: {} }} />);
+    expect(screen.queryByText('Round of 16')).not.toBeInTheDocument();
+  });
+
+  it('shows the live phase (halftime / 2nd half) on a live match', () => {
+    const { rerender } = render(<MatchSticker match={{ ...base, status: 'PAUSED', score: { home: 1, away: 0, halfTime: { home: 1, away: 0 } } }} />);
+    expect(screen.getByText(/halftime/i)).toBeInTheDocument();
+    rerender(<MatchSticker match={{ ...base, status: 'IN_PLAY', score: { home: 1, away: 0, halfTime: { home: 0, away: 0 } } }} />);
+    expect(screen.getByText(/2nd half/i)).toBeInTheDocument();
+  });
 });
