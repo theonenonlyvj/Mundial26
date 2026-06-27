@@ -35,6 +35,13 @@ export default function TodayView({
   if (!matches) return <section aria-label="Today">Loading today's matches…</section>;
 
   const { today, recent, upcoming } = bucketMatches(matches, now, timeZone);
+  // "Coming Up" = the next few days' slate, not the entire remaining tournament
+  // (which is mostly undecided knockout TBDs). The full schedule lives in Timeline.
+  const horizon = Date.parse(now) + 3 * 86_400_000;
+  const comingUp = (() => {
+    const within = upcoming.filter((m) => Date.parse(m.utcDate) <= horizon);
+    return within.length ? within : upcoming.slice(0, 6);
+  })();
 
   return (
     <section aria-label="Today">
@@ -46,7 +53,7 @@ export default function TodayView({
       ) : (
         <p style={{ fontWeight: 700 }}>No matches today — here's what's coming up next. ⤵️</p>
       )}
-      <Strip title="Coming Up" matches={upcoming} now={now} advByTeam={advByTeam} koDisplay={koDisplay} />
+      <Strip title="Coming Up" matches={comingUp} now={now} advByTeam={advByTeam} koDisplay={koDisplay} />
       <Strip title="Recent Results" matches={recent} now={now} advByTeam={advByTeam} koDisplay={koDisplay} />
     </section>
   );
