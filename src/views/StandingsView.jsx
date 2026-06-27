@@ -3,7 +3,7 @@ import { getStandings, getMatches } from '../api/client.js';
 import GroupTable from '../components/GroupTable.jsx';
 import Legend from '../components/Legend.jsx';
 import TiebreakerExplainer from '../components/TiebreakerExplainer.jsx';
-import Bracket from '../components/Bracket.jsx';
+import BracketTree from '../components/BracketTree.jsx';
 import Term from '../components/Term.jsx';
 import { defineTerm } from '../explainer/glossary.js';
 
@@ -48,7 +48,7 @@ export default function StandingsView() {
   const bracket = (
     <>
       <h2 style={{ marginTop: 0 }}>Knockout bracket</h2>
-      <Bracket matches={matches} />
+      <BracketTree matches={matches} standings={data} />
     </>
   );
 

@@ -19,7 +19,7 @@ describe('StandingsView', () => {
       json: async () => (url.includes('standings') ? standings : { matches: [] }),
     }));
     render(<StandingsView />);
-    await waitFor(() => expect(screen.getByText(/Group A/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText(/Group A/).length).toBeGreaterThan(0));
     expect(screen.getByText(/Into the knockouts/i)).toBeInTheDocument();
   });
 
