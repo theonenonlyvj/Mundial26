@@ -50,6 +50,17 @@ describe('bucketMatches', () => {
     expect(recent).toHaveLength(6);
   });
 
+  it('returns ALL upcoming matches — capping happens at the view, after filtering', () => {
+    // Regression: bucketMatches used to slice upcoming to 6. That dropped decided
+    // matches sitting behind a wall of TBD knockout slots before the view could
+    // ever filter for "what has something to show". Coming Up must see them all.
+    const input = Array.from({ length: 9 }, (_, i) =>
+      m(i + 1, `2026-06-${String(i + 16).padStart(2, '0')}T18:00:00Z`, 'SCHEDULED')
+    );
+    const { upcoming } = bucketMatches(input, now, TZ);
+    expect(upcoming).toHaveLength(9);
+  });
+
   it('regression: 8 PM Chicago (next UTC day) buckets as today not upcoming', () => {
     // now = 2026-06-21T18:00:00Z = Sun 1 PM Chicago
     // match at 2026-06-22T01:00:00Z = Sun 8 PM Chicago (past midnight UTC)
