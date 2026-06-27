@@ -23,6 +23,7 @@ describe('TimelineView', () => {
     render(<TimelineView now="2026-06-15T12:00:00Z" timeZone={TZ} />);
     await waitFor(() => expect(screen.getByText('Mexico')).toBeInTheDocument());
     expect(screen.getByText(/Today/)).toBeInTheDocument();
+    expect(screen.getByText(/earlier days are up/i)).toBeInTheDocument();
   });
 
   it('does not mark a non-today day', async () => {

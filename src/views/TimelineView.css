@@ -1,0 +1,32 @@
+.timeline__hint {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 14px;
+  padding: 4px 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #5e4500;
+  background: color-mix(in srgb, var(--gold) 30%, var(--paper));
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+}
+
+.timeline__day { margin-bottom: 22px; scroll-margin-top: 16px; }
+
+/* Past days dim a touch so it's clear where you are in the run of play. */
+.timeline__day.is-past { opacity: 0.7; }
+
+.timeline__day-label { margin: 0 0 10px; }
+.timeline__day.is-today .timeline__day-label { color: var(--gold); }
+
+.timeline__today-pill {
+  margin-left: 8px;
+  font-size: 0.62em;
+  font-weight: 800;
+  background: var(--gold);
+  color: var(--ink);
+  padding: 2px 9px;
+  border-radius: 999px;
+  vertical-align: middle;
+  letter-spacing: .03em;
+}
