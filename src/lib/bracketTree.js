@@ -1,64 +1,56 @@
 import {
-  R32_SLOTS, FEEDERS, LOSER_FEED, ROUND_OF, ROUND_LABEL, COLUMN_ORDER, COLUMNS, slotLabel,
+  R32_SLOTS, FEEDERS, ROUND_OF, ROUND_LABEL, COLUMN_ORDER, COLUMNS, slotLabel,
+  SLOT_CITY, SLOT_DATE,
 } from '../data/bracket2026.js';
 
 const DONE = new Set(['FINISHED', 'AWARDED']);
 const LIVE = new Set(['IN_PLAY', 'PAUSED']);
 
-// Group key -> { complete, W: team, RU: team }. Only COMPLETE groups (every team
-// has played its 3 matches) yield a confirmed winner/runner-up — matching how
-// football-data only slots teams once they're locked.
-function groupPositions(standings) {
-  const out = {};
-  for (const g of standings?.groups ?? []) {
-    const key = String(g.group ?? '').replace(/^group[\s_-]*/i, '').trim().toUpperCase();
-    const table = g.table ?? [];
-    const complete = table.length > 0 && table.every((r) => (r.played ?? 0) >= 3);
-    out[key] = { complete, W: table[0]?.team ?? null, RU: table[1]?.team ?? null };
-  }
-  return out;
+function pushTo(map, key, value) {
+  let arr = map.get(key);
+  if (!arr) { arr = []; map.set(key, arr); }
+  arr.push(value);
 }
 
-// Resolve the official 2026 bracket topology against live football-data matches +
-// standings. Connectors come from the fixed topology; teams/scores are attached by
-// finding the live match that actually contains an anchor team (never by date/id).
-export function resolveBracket(knockoutMatches = [], standings = null) {
-  const groups = groupPositions(standings);
-  const byRound = {};
-  for (const m of knockoutMatches) (byRound[m.stage] ||= []).push(m);
-  const findInRound = (round, teamId) =>
-    (byRound[round] || []).find((m) => m.home?.id === teamId || m.away?.id === teamId) || null;
+// Attach each live football-data knockout match to its official 2026 bracket slot
+// by the FIXED published schedule — (round + host city + date order) — NOT by team
+// identity. Every knockout fixture has a predetermined venue + date even before
+// its teams are known, so this resolves the both-TBD fixtures that identity
+// anchoring cannot (verified to agree with identity anchoring for every decided
+// match). Within the rare (round, city) bucket that holds two slots, both lists
+// are sorted ascending and zipped — timezone-safe, since relative order within a
+// city is preserved across UTC vs local dates.
+function anchorBySchedule(knockoutMatches) {
+  const officialByBucket = new Map(); // `${round}|${city}` -> [slotNo], date-sorted
+  for (let no = 73; no <= 104; no += 1) pushTo(officialByBucket, `${ROUND_OF[no]}|${SLOT_CITY[no]}`, no);
+  for (const slots of officialByBucket.values()) slots.sort((a, b) => SLOT_DATE[a].localeCompare(SLOT_DATE[b]));
 
-  const slotTeam = (slot) => {
-    if (slot.kind === '3rd') return null;
-    const g = groups[slot.group];
-    if (!g || !g.complete) return null;
-    return slot.kind === 'W' ? g.W : g.RU;
-  };
+  const fdByBucket = new Map();
+  for (const m of knockoutMatches) pushTo(fdByBucket, `${m.stage}|${m.city?.id ?? '?'}`, m);
+  for (const ms of fdByBucket.values()) {
+    ms.sort((a, b) => (a.utcDate < b.utcDate ? -1 : a.utcDate > b.utcDate ? 1 : 0));
+  }
 
-  const memo = new Map();
-  const resolve = (no) => {
-    if (memo.has(no)) return memo.get(no);
+  const bySlot = new Map(); // slotNo -> fd match
+  for (const [bucket, slots] of officialByBucket) {
+    const fds = fdByBucket.get(bucket) ?? [];
+    for (let i = 0; i < slots.length && i < fds.length; i += 1) bySlot.set(slots[i], fds[i]);
+  }
+  return bySlot;
+}
+
+// Resolve the official 2026 bracket topology against live football-data matches.
+// `standings` is accepted for back-compat but no longer needed: the slot a match
+// belongs to comes from the fixed schedule, and the teams come from the match
+// itself (undecided sides are labelled from the topology by knockoutDisplay).
+export function resolveBracket(knockoutMatches = [], standings = null) { // eslint-disable-line no-unused-vars
+  const bySlot = anchorBySchedule(knockoutMatches);
+  const nodes = new Map();
+
+  for (let no = 73; no <= 104; no += 1) {
     const round = ROUND_OF[no];
-    let fd = null;
-    let labels;
-
-    if (round === 'LAST_32') {
-      const slots = R32_SLOTS[no];
-      labels = slots.map(slotLabel);
-      const anchor = slots.map(slotTeam).find(Boolean) ?? null;
-      fd = anchor ? findInRound('LAST_32', anchor.id) : null;
-    } else {
-      const [fa, fb] = FEEDERS[no];
-      const ra = resolve(fa);
-      const rb = resolve(fb);
-      const loser = LOSER_FEED.has(no);
-      const ta = loser ? ra.loser : ra.winner;
-      const tb = loser ? rb.loser : rb.winner;
-      labels = ['TBD', 'TBD'];
-      const anchor = ta || tb || null;
-      fd = anchor ? findInRound(round, anchor.id) : null;
-    }
+    const fd = bySlot.get(no) ?? null;
+    const labels = round === 'LAST_32' ? R32_SLOTS[no].map(slotLabel) : ['TBD', 'TBD'];
 
     let home = null; let away = null; let winner = null; let loser = null;
     if (fd) {
@@ -68,7 +60,7 @@ export function resolveBracket(knockoutMatches = [], standings = null) {
       else if (fd.score?.winner === 'AWAY_TEAM') { winner = away; loser = home; }
     }
 
-    const node = {
+    nodes.set(no, {
       no,
       round,
       roundLabel: ROUND_LABEL[round],
@@ -85,12 +77,8 @@ export function resolveBracket(knockoutMatches = [], standings = null) {
       isDone: fd ? DONE.has(fd.status) : false,
       winner,
       loser,
-    };
-    memo.set(no, node);
-    return node;
-  };
+    });
+  }
 
-  const nodes = new Map();
-  for (let no = 73; no <= 104; no++) nodes.set(no, resolve(no));
   return { nodes, columnOrder: COLUMN_ORDER, columns: COLUMNS };
 }

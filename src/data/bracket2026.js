@@ -28,6 +28,34 @@ export const R32_SLOTS = {
   88: [{ kind: 'RU', group: 'D' }, { kind: 'RU', group: 'G' }],
 };
 
+// Official 2026 host city + (local) date for every knockout slot 73–104, from the
+// published schedule (en.wikipedia.org/wiki/2026_FIFA_World_Cup_knockout_stage,
+// cross-checked against football-data's per-fixture city map). Every slot has a
+// FIXED venue + date regardless of which teams fill it, so we attach the live
+// match to its slot by (round, city, date) — see lib/bracketTree.js. City ids
+// match football-data's normalized `match.city.id`. SLOT_DATE is only used to
+// order the (rare) two slots a single city hosts in the same round.
+export const SLOT_CITY = {
+  73: 'los-angeles', 74: 'boston', 75: 'monterrey', 76: 'houston',
+  77: 'new-york', 78: 'dallas', 79: 'mexico-city', 80: 'atlanta',
+  81: 'bay-area', 82: 'seattle', 83: 'toronto', 84: 'los-angeles',
+  85: 'vancouver', 86: 'miami', 87: 'kansas-city', 88: 'dallas',
+  89: 'philadelphia', 90: 'houston', 91: 'new-york', 92: 'mexico-city',
+  93: 'dallas', 94: 'seattle', 95: 'atlanta', 96: 'vancouver',
+  97: 'boston', 98: 'los-angeles', 99: 'miami', 100: 'kansas-city',
+  101: 'dallas', 102: 'atlanta', 103: 'miami', 104: 'new-york',
+};
+export const SLOT_DATE = {
+  73: '2026-06-28', 74: '2026-06-29', 75: '2026-06-29', 76: '2026-06-29',
+  77: '2026-06-30', 78: '2026-06-30', 79: '2026-06-30', 80: '2026-07-01',
+  81: '2026-07-01', 82: '2026-07-01', 83: '2026-07-02', 84: '2026-07-02',
+  85: '2026-07-02', 86: '2026-07-03', 87: '2026-07-03', 88: '2026-07-03',
+  89: '2026-07-04', 90: '2026-07-04', 91: '2026-07-05', 92: '2026-07-05',
+  93: '2026-07-06', 94: '2026-07-06', 95: '2026-07-07', 96: '2026-07-07',
+  97: '2026-07-09', 98: '2026-07-10', 99: '2026-07-11', 100: '2026-07-11',
+  101: '2026-07-14', 102: '2026-07-15', 103: '2026-07-18', 104: '2026-07-19',
+};
+
 // Winner-feeders for every match from the Round of 16 on. M103 (third place) takes
 // the two semi-final LOSERS, flagged separately.
 export const FEEDERS = {
