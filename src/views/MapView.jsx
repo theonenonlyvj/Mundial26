@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { getReference, getMatches } from '../api/client.js';
+import { useLiveData } from '../hooks/useLiveData.js';
 import { advancementForMatch } from '../lib/advancement.js';
 import { useAdvByTeam } from '../hooks/useAdvByTeam.js';
 import MatchSticker from '../components/MatchSticker.jsx';
+import FreshnessNote from '../components/FreshnessNote.jsx';
 import './MapView.css';
 
 const REGIONS = [
@@ -13,23 +15,12 @@ const REGIONS = [
 ];
 
 export default function MapView() {
-  const [hostCities, setHostCities] = useState(null);
-  const [matches, setMatches] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [error, setError] = useState(null);
   const advByTeam = useAdvByTeam();
-
-  useEffect(() => {
-    let active = true;
-    Promise.all([getReference(), getMatches()])
-      .then(([ref, m]) => {
-        if (!active) return;
-        setHostCities(ref.hostCities);
-        setMatches(m.matches);
-      })
-      .catch((e) => active && setError(e.message));
-    return () => { active = false; };
-  }, []);
+  const { data, dataAsOf, error } = useLiveData('cities', () =>
+    Promise.all([getReference(), getMatches()]).then(([ref, m]) => ({ hostCities: ref.hostCities, matches: m.matches })));
+  const hostCities = data?.hostCities ?? null;
+  const matches = data?.matches ?? [];
 
   const byCity = useMemo(() => {
     const map = new Map();
@@ -42,7 +33,7 @@ export default function MapView() {
     return map;
   }, [matches]);
 
-  if (error) return <section aria-label="Cities">Couldn't load city data.</section>;
+  if (!hostCities && error) return <section aria-label="Cities">Couldn't load city data.</section>;
   if (!hostCities) return <section aria-label="Cities">Loading host cities…</section>;
 
   const cityById = new Map(hostCities.map((c) => [c.id, c]));
@@ -50,7 +41,9 @@ export default function MapView() {
   const selectedMatches = selected ? (byCity.get(selected) ?? []) : [];
 
   return (
-    <section aria-label="Cities" className="cities">
+    <section aria-label="Cities">
+      <FreshnessNote at={dataAsOf} />
+      <div className="cities">
       <div className="cities__picker-mobile">
         <label className="cities__select-label" htmlFor="city-select">Jump to a city</label>
         <select
@@ -127,6 +120,7 @@ export default function MapView() {
         ) : (
           <p className="cities__prompt">Pick a city to see its matches. 📍</p>
         )}
+      </div>
       </div>
     </section>
   );

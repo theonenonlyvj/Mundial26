@@ -13,8 +13,8 @@ export default function ColdStartBanner() {
     <div className="coldstart" role="status" aria-live="polite">
       <span className="coldstart__emoji" aria-hidden="true">💸</span>
       <span className="coldstart__text">
-        VJ went with the free server, so it naps when nobody's watching. It's
-        waking up now — scores in ~30s. Worth the wait, promise.
+        VJ went with the free server, so it naps when nobody's watching — showing
+        the last scores I saved while it wakes up (~30s). Worth the wait, promise.
       </span>
     </div>
   );
