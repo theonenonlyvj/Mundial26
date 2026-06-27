@@ -27,8 +27,13 @@ export default function StandingsView() {
   if (error) return <section aria-label="Standings">Couldn't load standings right now.</section>;
   if (!data) return <section aria-label="Standings">Loading the tables…</section>;
 
-  return (
-    <section aria-label="Standings">
+  // Once every group match is played, the bracket is the live story — lift it
+  // above the (now historical) group tables.
+  const groupMatches = matches.filter((m) => m.stage === 'GROUP_STAGE');
+  const groupStageOver = groupMatches.length > 0 && groupMatches.every((m) => m.status === 'FINISHED');
+
+  const groupTables = (
+    <>
       <Legend />
       <TiebreakerExplainer />
       <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fill, minmax(440px, 1fr))', marginTop: 12 }}>
@@ -37,8 +42,30 @@ export default function StandingsView() {
       <p style={{ color: 'var(--muted)', marginTop: 12 }}>
         Plus the <Term define={defineTerm('bestThird')}><strong>8 best third-place teams</strong></Term> across all groups advance to the Round of 32.
       </p>
-      <h2 style={{ marginTop: 24 }}>Knockout bracket</h2>
+    </>
+  );
+
+  const bracket = (
+    <>
+      <h2 style={{ marginTop: 0 }}>Knockout bracket</h2>
       <Bracket matches={matches} />
+    </>
+  );
+
+  return (
+    <section aria-label="Standings">
+      {groupStageOver ? (
+        <>
+          {bracket}
+          <h2 style={{ marginTop: 28 }}>Final group standings</h2>
+          {groupTables}
+        </>
+      ) : (
+        <>
+          {groupTables}
+          <div style={{ marginTop: 24 }}>{bracket}</div>
+        </>
+      )}
     </section>
   );
 }

@@ -24,6 +24,10 @@ export function normalizeMatch(m) {
       home: m.score?.fullTime?.home ?? null,
       away: m.score?.fullTime?.away ?? null,
       winner: m.score?.winner ?? null,
+      halfTime: {
+        home: m.score?.halfTime?.home ?? null,
+        away: m.score?.halfTime?.away ?? null,
+      },
     },
   };
 }

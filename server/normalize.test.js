@@ -22,6 +22,14 @@ describe('normalizeMatch', () => {
       score: { home: 2, away: 1, winner: 'HOME_TEAM' },
     });
   });
+
+  it('carries the halftime score through', () => {
+    const m = normalizeMatch({
+      id: 2, homeTeam: { name: 'A' }, awayTeam: { name: 'B' },
+      score: { fullTime: { home: 2, away: 1 }, halfTime: { home: 1, away: 0 } },
+    });
+    expect(m.score.halfTime).toEqual({ home: 1, away: 0 });
+  });
 });
 
 describe('normalizeScorer', () => {

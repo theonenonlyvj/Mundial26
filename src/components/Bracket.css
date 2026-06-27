@@ -1,3 +1,38 @@
-.bracket { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
-.bracket__round { min-width: 280px; display: grid; gap: 12px; align-content: start; }
+.bracket-wrap { position: relative; }
+
+.bracket__hint {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: .01em;
+}
+
+.bracket {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scroll-snap-type: x proximity;
+  /* Make the scrollbar visible & on-theme so it reads as scrollable */
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) var(--paper-edge);
+}
+.bracket::-webkit-scrollbar { height: 10px; }
+.bracket::-webkit-scrollbar-track { background: var(--paper-edge); border-radius: 8px; }
+.bracket::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 8px; }
+
+.bracket__round { min-width: 280px; scroll-snap-align: start; display: grid; gap: 12px; align-content: start; }
 .bracket__round h3 { margin: 0; text-transform: uppercase; color: var(--muted); }
+
+/* Fade the right edge so it's obvious more rounds continue off-screen. */
+.bracket-wrap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 14px;
+  width: 44px;
+  background: linear-gradient(to right, transparent, var(--paper));
+  pointer-events: none;
+}
