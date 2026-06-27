@@ -1,6 +1,7 @@
 import { getMatches } from '../api/client.js';
 import { useLiveData } from '../hooks/useLiveData.js';
 import { bucketMatches } from '../lib/matchTime.js';
+import { selectComingUp } from '../lib/comingUp.js';
 import { advancementForMatch } from '../lib/advancement.js';
 import { useAdvByTeam } from '../hooks/useAdvByTeam.js';
 import { useKnockoutDisplay } from '../hooks/useKnockoutDisplay.js';
@@ -35,22 +36,11 @@ export default function TodayView({
   if (!matches) return <section aria-label="Today">Loading today's matches…</section>;
 
   const { today, recent, upcoming } = bucketMatches(matches, now, timeZone);
-  // "Coming Up" = the next few days' slate, not the entire remaining tournament
-  // (which is mostly undecided knockout TBDs). The full schedule lives in Timeline.
-  const horizon = Date.parse(now) + 3 * 86_400_000;
-  // Only show matches you can actually anticipate: at least one known team, or a
-  // resolvable seed ("Grp K · 1st" / "A OR B"). Drop fully-undecided knockout
-  // fixtures (both sides TBD) — they live in Timeline + the bracket.
-  const known = (t) => t && t.name && t.name !== 'TBD';
-  const showable = (m) => {
-    if (known(m.home) || known(m.away)) return true;
-    const d = koDisplay?.get(m.id);
-    return !!(d && ((d.home && d.home.kind !== 'tbd') || (d.away && d.away.kind !== 'tbd')));
-  };
-  const comingUp = (() => {
-    const within = upcoming.filter((m) => Date.parse(m.utcDate) <= horizon && showable(m));
-    return within.length ? within : upcoming.filter(showable).slice(0, 6);
-  })();
+  // "Coming Up" = the next handful of upcoming matches that have something to
+  // show — a decided team or a resolvable knockout seed ("Grp K · 1st" / "A OR
+  // B" / "Winner R32"). selectComingUp filters the WHOLE list first, then caps,
+  // so a decided match never gets hidden behind a wall of TBD knockout slots.
+  const comingUp = selectComingUp(upcoming, koDisplay);
 
   return (
     <section aria-label="Today">

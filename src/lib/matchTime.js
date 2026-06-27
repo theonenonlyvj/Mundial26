@@ -17,5 +17,8 @@ export function bucketMatches(matches, nowIso, timeZone) {
   recent.sort((a, b) => b.utcDate.localeCompare(a.utcDate));
   upcoming.sort((a, b) => a.utcDate.localeCompare(b.utcDate));
   today.sort((a, b) => a.utcDate.localeCompare(b.utcDate));
-  return { today, recent: recent.slice(0, 6), upcoming: upcoming.slice(0, 6) };
+  // `upcoming` is returned in full and on purpose: the view filters it for
+  // "what has something to show" and then caps. Capping here (before the filter)
+  // is what made decided matches behind a wall of TBD knockout slots disappear.
+  return { today, recent: recent.slice(0, 6), upcoming };
 }
