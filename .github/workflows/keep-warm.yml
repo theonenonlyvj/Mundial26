@@ -1,0 +1,18 @@
+name: Keep API warm during matches
+
+# Kickoffs are fixed, so we only wake the free Render API around match times.
+# Outside match windows the script no-ops and the server is left to sleep.
+on:
+  schedule:
+    - cron: '*/10 * * * *' # every 10 min; the script decides whether to ping
+  workflow_dispatch: {}     # allow manual runs
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/keep-warm.mjs

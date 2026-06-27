@@ -7,7 +7,6 @@
   padding: 4px 12px;
   font-size: 0.82rem;
   font-weight: 800;
-  letter-spacing: .02em;
   color: #5e4500;
   background: color-mix(in srgb, var(--gold) 38%, var(--paper));
   border: 1px solid var(--gold);
@@ -20,7 +19,6 @@
   overflow-x: auto;
   padding-bottom: 10px;
   scroll-snap-type: x proximity;
-  /* Make the scrollbar visible & on-theme so it reads as scrollable */
   scrollbar-width: thin;
   scrollbar-color: var(--gold) var(--paper-edge);
 }
@@ -28,11 +26,15 @@
 .bracket::-webkit-scrollbar-track { background: var(--paper-edge); border-radius: 8px; }
 .bracket::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 8px; }
 
-.bracket__round { min-width: 280px; scroll-snap-align: start; display: grid; gap: 12px; align-content: start; }
+.bracket__round {
+  flex: 0 0 auto;
+  width: min(86vw, 300px);
+  scroll-snap-align: start;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
 .bracket__round h3 { margin: 0; text-transform: uppercase; color: var(--muted); }
-
-/* Highlight the round currently in play (auto-scrolled to the left edge). The
-   "now" tag is a pseudo-element so it never shows up in text/DOM queries. */
 .bracket__round[data-current="true"] h3 { color: var(--gold); }
 .bracket__round[data-current="true"] h3::after {
   content: " ● now";
@@ -40,16 +42,4 @@
   font-weight: 800;
   color: var(--gold);
   letter-spacing: .03em;
-}
-
-/* Fade the right edge so it's obvious more rounds continue off-screen. */
-.bracket-wrap::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 14px;
-  width: 44px;
-  background: linear-gradient(to right, transparent, var(--paper));
-  pointer-events: none;
 }

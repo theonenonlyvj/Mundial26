@@ -38,7 +38,7 @@ export default function StandingsView() {
   const bracket = (
     <>
       <h2 style={{ marginTop: 0 }}>Knockout bracket</h2>
-      <Bracket matches={matches} standings={standings} />
+      <Bracket matches={matches} />
     </>
   );
 

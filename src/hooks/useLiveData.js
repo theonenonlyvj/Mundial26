@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
 import { readCache, writeCache } from '../api/dataCache.js';
+import { getSeed } from '../data/seed.js';
 
 // Cache-first data loading: seed state synchronously from the last cached result
 // (so the page paints real content immediately, even while the API cold-starts),
 // then fetch fresh in the background and update + re-cache. `dataAsOf` is when the
 // shown data was last successfully loaded.
 export function useLiveData(key, fetcher) {
-  const [data, setData] = useState(() => readCache(key)?.data ?? null);
-  const [dataAsOf, setDataAsOf] = useState(() => readCache(key)?.at ?? null);
+  // Prefer this visitor's cached copy; otherwise fall back to the bundled
+  // snapshot so the page is never blank on a first visit.
+  const initial = () => readCache(key) ?? getSeed(key);
+  const [data, setData] = useState(() => initial()?.data ?? null);
+  const [dataAsOf, setDataAsOf] = useState(() => initial()?.at ?? null);
   const [error, setError] = useState(null);
 
   useEffect(() => {

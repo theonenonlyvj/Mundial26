@@ -3,30 +3,30 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Bracket from './Bracket.jsx';
 
-const team = (id, name) => ({ id, name, tla: name, crest: null });
+const km = {
+  id: 1, stage: 'FINAL', status: 'SCHEDULED', utcDate: '2026-07-19T19:00:00Z',
+  score: { home: null, away: null }, home: { name: 'TBD' }, away: { name: 'TBD' }, city: null,
+};
 
-describe('Bracket (responsive, topology-driven)', () => {
-  it('renders the full round structure with labels', () => {
-    render(<Bracket matches={[]} standings={{ groups: [] }} />);
-    expect(screen.getByText('Round of 32')).toBeInTheDocument();
-    expect(screen.getByText('Final')).toBeInTheDocument();
+describe('Bracket', () => {
+  it('renders a round label when knockout matches exist', () => {
+    render(<Bracket matches={[km]} />);
+    expect(screen.getByText(/Final/)).toBeInTheDocument();
   });
 
-  it('shows slot labels for undecided knockout matches', () => {
-    render(<Bracket matches={[]} standings={{ groups: [] }} />);
-    expect(screen.getAllByText(/Runner-up Group/i).length).toBeGreaterThan(0);
+  it('shows the placeholder before any knockout games', () => {
+    render(<Bracket matches={[{ id: 2, stage: 'GROUP_STAGE', utcDate: '2026-06-12T00:00:00Z', score: {}, home: { name: 'A' }, away: { name: 'B' } }]} />);
+    expect(screen.getByText(/fills in once the groups finish/i)).toBeInTheDocument();
   });
 
-  it('fills a resolved team into the bracket from a completed group', () => {
-    const standings = {
-      groups: [{ group: 'Group A', table: [1, 2, 3, 4].map((id) => ({ team: team(id, `A${id}`), played: 3 })) }],
-    };
-    // M79 = Winner Group A vs a third-place team — provide that live R32 match.
-    const matches = [{
-      id: 537400, stage: 'LAST_32', status: 'SCHEDULED', utcDate: '2026-07-01T18:00:00Z',
-      score: {}, home: team(1, 'A1'), away: team(9, 'X9'), city: null,
-    }];
-    render(<Bracket matches={matches} standings={standings} />);
-    expect(screen.getAllByText('A1').length).toBeGreaterThan(0);
+  it('marks the earliest unfinished round as current', () => {
+    const matches = [
+      { id: 1, stage: 'LAST_32', status: 'FINISHED', utcDate: '2026-06-28T00:00:00Z', score: {}, home: { name: 'A' }, away: { name: 'B' } },
+      { id: 2, stage: 'LAST_16', status: 'SCHEDULED', utcDate: '2026-07-03T00:00:00Z', score: {}, home: { name: 'C' }, away: { name: 'D' } },
+    ];
+    const { container } = render(<Bracket matches={matches} />);
+    const current = container.querySelector('[data-current="true"] h3');
+    expect(current).not.toBeNull();
+    expect(current.textContent).toMatch(/Round of 16/);
   });
 });
