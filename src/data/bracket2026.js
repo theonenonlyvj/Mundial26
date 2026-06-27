@@ -78,3 +78,24 @@ export function slotLabel(slot) {
   if (slot.kind === '3rd') return '3rd-place team';
   return `${slot.kind === 'W' ? 'Winner' : 'Runner-up'} Group ${slot.group}`;
 }
+
+// child match number -> the match its WINNER advances to (third-place's loser
+// edges excluded), so we can trace a match's route forward to the final.
+export const WINNER_PARENT = (() => {
+  const m = {};
+  for (const [p, fs] of Object.entries(FEEDERS)) {
+    if (LOSER_FEED.has(Number(p))) continue;
+    for (const c of fs) m[c] = Number(p);
+  }
+  return m;
+})();
+
+// The set of matches on a given match's path: itself, the two it draws from,
+// and the chain of matches its winner could advance through to the final.
+export function bracketPath(no) {
+  const set = new Set([no]);
+  (FEEDERS[no] ?? []).forEach((c) => set.add(c));
+  let cur = WINNER_PARENT[no];
+  while (cur) { set.add(cur); cur = WINNER_PARENT[cur]; }
+  return set;
+}
