@@ -3,6 +3,7 @@ import { getReference, getMatches } from '../api/client.js';
 import { useLiveData } from '../hooks/useLiveData.js';
 import { advancementForMatch } from '../lib/advancement.js';
 import { useAdvByTeam } from '../hooks/useAdvByTeam.js';
+import { useKnockoutDisplay } from '../hooks/useKnockoutDisplay.js';
 import MatchSticker from '../components/MatchSticker.jsx';
 import FreshnessNote from '../components/FreshnessNote.jsx';
 import './MapView.css';
@@ -21,6 +22,7 @@ export default function MapView() {
     Promise.all([getReference(), getMatches()]).then(([ref, m]) => ({ hostCities: ref.hostCities, matches: m.matches, stale: m.stale })));
   const hostCities = data?.hostCities ?? null;
   const matches = data?.matches ?? [];
+  const koDisplay = useKnockoutDisplay(matches);
 
   const byCity = useMemo(() => {
     const map = new Map();
@@ -113,7 +115,7 @@ export default function MapView() {
             </div>
             <div className="cities__matches">
               {selectedMatches.length > 0
-                ? selectedMatches.map((m) => <MatchSticker key={m.id} match={m} advancement={advancementForMatch(m, advByTeam)} />)
+                ? selectedMatches.map((m) => <MatchSticker key={m.id} match={m} advancement={advancementForMatch(m, advByTeam)} knockout={koDisplay?.get(m.id) ?? null} />)
                 : <p className="cities__no-matches">No matches for this city yet.</p>}
             </div>
           </>

@@ -11,7 +11,7 @@ describe('buildKnockout displays', () => {
     const { nodes } = buildKnockout([], { groups: [] });
     expect(nodes.get(73).homeDisplay).toEqual({ kind: 'slot', label: 'Grp A · 2nd' }); // Runner-up A
     expect(nodes.get(74).homeDisplay).toEqual({ kind: 'slot', label: 'Grp E · 1st' }); // Winner E
-    expect(nodes.get(74).awayDisplay).toEqual({ kind: 'slot', label: '3rd place' });
+    expect(nodes.get(74).awayDisplay).toEqual({ kind: 'slot', label: '3rd: A/B/C/D/F' });
   });
 
   it('resolves a team into the card once its group is complete', () => {

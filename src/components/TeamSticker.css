@@ -11,6 +11,10 @@
 .team__badge img { width: 100%; height: 100%; object-fit: cover; }
 .team__info { display: flex; flex-direction: column; gap: 2px; min-width: 0; align-items: flex-start; }
 .team--right .team__info { align-items: flex-end; }
+.team__badge--empty { background: var(--paper); color: var(--muted); border: 2px dashed var(--paper-edge); box-shadow: none; font-style: italic; }
+.team__name--slot { color: var(--muted); font-weight: 600; font-size: 12px; }
+.team__name--either { font-size: 12px; font-weight: 700; }
+.team__name--either em { color: var(--muted); font-style: italic; }
 .team__adv {
   font-size: 10px;
   font-weight: 800;

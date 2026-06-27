@@ -1,13 +1,14 @@
 import { resolveBracket } from './bracketTree.js';
-import { R32_SLOTS, FEEDERS, ROUND_OF } from '../data/bracket2026.js';
+import { R32_SLOTS, FEEDERS, ROUND_OF, LOSER_FEED } from '../data/bracket2026.js';
 
 const SHORT_ROUND = {
   LAST_32: 'R32', LAST_16: 'R16', QUARTER_FINALS: 'QF',
-  SEMI_FINALS: 'SF', THIRD_PLACE: '3rd', FINAL: 'Final',
+  SEMI_FINALS: 'Semi-final', THIRD_PLACE: '3rd', FINAL: 'Final',
 };
 
 function shortSlot(slot) {
-  if (slot.kind === '3rd') return '3rd place';
+  // R32 third-place slot: a best-third team, from one of a known set of groups.
+  if (slot.kind === '3rd') return slot.groups ? `3rd: ${slot.groups}` : 'best 3rd';
   return `Grp ${slot.group} · ${slot.kind === 'W' ? '1st' : '2nd'}`;
 }
 
@@ -23,6 +24,10 @@ function sideDisplay(nodes, no, idx) {
 
   if (node.round === 'LAST_32') {
     return { kind: 'slot', label: shortSlot(R32_SLOTS[no][idx]) };
+  }
+  // The third-place match is contested by the two semi-final LOSERS.
+  if (LOSER_FEED.has(no)) {
+    return { kind: 'slot', label: 'Semi-final loser' };
   }
   const feederNo = (FEEDERS[no] ?? [])[idx];
   if (feederNo != null) {

@@ -5,6 +5,7 @@ import { groupMatchesByDay } from '../lib/groupByDate.js';
 import { dayKey } from '../lib/matchTime.js';
 import { advancementForMatch } from '../lib/advancement.js';
 import { useAdvByTeam } from '../hooks/useAdvByTeam.js';
+import { useKnockoutDisplay } from '../hooks/useKnockoutDisplay.js';
 import MatchSticker from '../components/MatchSticker.jsx';
 import FreshnessNote from '../components/FreshnessNote.jsx';
 import './TimelineView.css';
@@ -16,6 +17,7 @@ export default function TimelineView({
   const advByTeam = useAdvByTeam();
   const { data, dataAsOf, error } = useLiveData('matches', getMatches);
   const matches = data?.matches ?? null;
+  const koDisplay = useKnockoutDisplay(matches);
   const anchorRef = useRef(null);
 
   // On open, jump to today's matches (or the next day with games) so you land in
@@ -57,7 +59,7 @@ export default function TimelineView({
             </h2>
             <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
               {day.matches.map((m) => (
-                <MatchSticker key={m.id} match={m} now={now} advancement={advancementForMatch(m, advByTeam)} />
+                <MatchSticker key={m.id} match={m} now={now} advancement={advancementForMatch(m, advByTeam)} knockout={koDisplay?.get(m.id) ?? null} />
               ))}
             </div>
           </div>
