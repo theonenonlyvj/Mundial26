@@ -35,9 +35,15 @@ export function advancementStatus(rankedTable) {
       }
     } else {
       const others = rankedTable.filter((r) => r !== row);
-      const canReachOrTie = others.filter((o) => maxReachable(o) >= row.points).length;
+      // A rival only finishes ABOVE you by getting MORE points than you've
+      // already secured (you can't lose points). Rivals who can at best TIE you
+      // don't knock you out of the top two — your current standing/GD wins the
+      // tie. So you've clinched a top-two place once at most one rival can
+      // exceed your points. (Counting ties as threats wrongly flagged a clear
+      // group leader like a 6-point Argentina as merely "alive".)
+      const canExceed = others.filter((o) => maxReachable(o) > row.points).length;
       const alreadyAbove = others.filter((o) => o.points > maxReachable(row)).length;
-      if (canReachOrTie <= 1) {
+      if (canExceed <= 1) {
         status = 'through';
         note = 'Already guaranteed a top-two place';
       } else if (alreadyAbove >= 2) {
