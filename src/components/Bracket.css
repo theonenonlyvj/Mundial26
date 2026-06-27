@@ -1,11 +1,17 @@
 .bracket-wrap { position: relative; }
 
 .bracket__hint {
-  margin: 0 0 8px;
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 10px;
+  padding: 4px 12px;
   font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--muted);
-  letter-spacing: .01em;
+  font-weight: 800;
+  letter-spacing: .02em;
+  color: #5e4500;
+  background: color-mix(in srgb, var(--gold) 38%, var(--paper));
+  border: 1px solid var(--gold);
+  border-radius: 999px;
 }
 
 .bracket {

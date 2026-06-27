@@ -95,8 +95,10 @@ export default function MapView() {
                       aria-pressed={isActive}
                       onClick={() => setSelected(c.id)}
                     >
-                      <span className="cities__chip-name">{c.city}</span>
-                      <span className="cities__chip-stadium">{c.stadium}</span>
+                      <span className="cities__chip-main">
+                        <span className="cities__chip-name">{c.city}</span>
+                        <span className="cities__chip-stadium">{c.stadium}</span>
+                      </span>
                       {matchCount > 0 && (
                         <span className="cities__chip-count">{matchCount}</span>
                       )}
