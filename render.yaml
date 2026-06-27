@@ -1,36 +1,15 @@
-# Non-destructive split. The existing `mundial26` web service is kept UNCHANGED
-# in name, so a blueprint sync updates it in place and its public URL
-# (mundial26-y28p.onrender.com) stays alive for everyone it was shared with.
-# A new always-on static site is added ALONGSIDE it as the fast URL to share next.
+# This blueprint manages ONLY the static SPA (always-on CDN).
+#
+# The API runs on the pre-existing `mundial26` web service
+# (https://mundial26-y28p.onrender.com), which was created by hand on the first
+# deploy — OUTSIDE this blueprint. A blueprint can't adopt a hand-made service by
+# name, so declaring the web service here just made Render create a DUPLICATE.
+# We therefore configure the API service directly in its own dashboard (env vars
+# like CLIENT_ORIGIN), and keep this file scoped to the static frontend only.
 services:
-  # --- Existing combined app (KEEP: preserves the -y28p URL already shared) ---
-  # Still serves the full SPA + API. Cold-starts as before; nothing regresses.
-  # Also acts as the API origin for the static site below.
-  - type: web
-    name: mundial26
-    runtime: node
-    plan: free
-    # --include=dev: NODE_ENV=production (below) makes npm skip devDependencies,
-    # but vite/react/build plugins live there and are needed to build the SPA.
-    buildCommand: npm install --include=dev && npm run build
-    startCommand: npm start
-    envVars:
-      - key: FOOTBALL_DATA_API_KEY
-        sync: false
-      - key: NODE_ENV
-        value: production
-      # Pin Node >= 20.12 so `--env-file-if-exists` (used in npm start) is supported.
-      - key: NODE_VERSION
-        value: "22"
-      # The static-site origin allowed to call this API cross-origin (set in the
-      # dashboard once the static site has a URL). Enables CORS for that one origin.
-      - key: CLIENT_ORIGIN
-        sync: false
-
-  # --- New SPA static site (CDN, always-on, no spin-down) ---
-  # The fast URL to share going forward. Calls the web service above for data.
-  # Static sites use type:web + runtime:static in the current Render schema
-  # (the old `type: static` keyword is no longer accepted by the blueprint parser).
+  # --- SPA static site (CDN, always-on, no spin-down) ---
+  # The fast URL to share. Calls the existing -y28p web service for data.
+  # Static sites use type:web + runtime:static in the current Render schema.
   - type: web
     runtime: static
     name: mundial26-app
@@ -42,8 +21,8 @@ services:
         source: /*
         destination: /index.html
     envVars:
-      # Absolute URL of the web service above, baked into the build (set in the
-      # dashboard). Unset locally -> dev uses the vite proxy. e.g.
-      # https://mundial26-y28p.onrender.com
+      # Absolute URL of the existing API service, baked into the build (set in the
+      # dashboard). Unset locally -> dev uses the vite proxy.
+      # e.g. https://mundial26-y28p.onrender.com
       - key: VITE_API_URL
         sync: false
