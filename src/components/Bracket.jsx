@@ -1,38 +1,37 @@
 import { useEffect, useRef } from 'react';
-import { knockoutRounds } from '../lib/bracket.js';
-import MatchSticker from './MatchSticker.jsx';
+import { buildKnockout } from '../lib/knockoutDisplay.js';
+import { COLUMNS, COLUMN_ORDER, ROUND_LABEL } from '../data/bracket2026.js';
+import KnockoutCard from './KnockoutCard.jsx';
 import './Bracket.css';
 
+const ROUNDS = [...COLUMNS, 'THIRD_PLACE'];
 const DONE = new Set(['FINISHED', 'AWARDED']);
 
-// Plain knockout bracket: the real matches grouped by round as cards, scrolled
-// sideways. Auto-opens on the round currently in play.
-export default function Bracket({ matches }) {
-  const rounds = knockoutRounds(matches);
+// Plain round-by-round bracket built from the verified 2026 topology, so undecided
+// slots show their seed ("Grp K · 1st", "3rd place") and Round-of-16 cards show
+// "A OR B" with a split flag once their Round-of-32 tie is set.
+export default function Bracket({ matches = [], standings = null }) {
+  const { nodes } = buildKnockout(matches, standings);
   const wrapRef = useRef(null);
 
-  const currentIdx = (() => {
-    const i = rounds.findIndex((r) => r.matches.some((m) => !DONE.has(m.status)));
-    return i === -1 ? rounds.length - 1 : i;
-  })();
+  const currentRound = ROUNDS.find((r) =>
+    COLUMN_ORDER[r].some((no) => { const n = nodes.get(no); return n.match && !DONE.has(n.status); }),
+  ) ?? 'LAST_32';
 
   useEffect(() => {
     const scroller = wrapRef.current?.querySelector('.bracket');
     const current = wrapRef.current?.querySelector('[data-current="true"]');
     if (scroller && current) scroller.scrollLeft = Math.max(0, current.offsetLeft - 4);
-  }, [rounds.length, currentIdx]);
+  }, [currentRound]);
 
-  if (!rounds.length) {
-    return <p style={{ color: 'var(--muted)' }}>The knockout bracket fills in once the groups finish. 🏆</p>;
-  }
   return (
     <div className="bracket-wrap" ref={wrapRef}>
-      {rounds.length > 1 && <p className="bracket__hint">Scroll sideways to move through the rounds →</p>}
+      <p className="bracket__hint">Scroll sideways to move through the rounds →</p>
       <div className="bracket">
-        {rounds.map((round, i) => (
-          <div className="bracket__round" key={round.stage} data-current={i === currentIdx ? 'true' : undefined}>
-            <h3>{round.label}</h3>
-            {round.matches.map((m) => <MatchSticker key={m.id} match={m} showStage={false} />)}
+        {ROUNDS.map((round) => (
+          <div className="bracket__round" key={round} data-current={round === currentRound ? 'true' : undefined}>
+            <h3>{ROUND_LABEL[round]}</h3>
+            {COLUMN_ORDER[round].map((no) => <KnockoutCard key={no} node={nodes.get(no)} />)}
           </div>
         ))}
       </div>

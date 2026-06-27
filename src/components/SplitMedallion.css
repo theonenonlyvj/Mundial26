@@ -1,0 +1,23 @@
+.splitmed {
+  position: relative;
+  display: inline-block;
+  border-radius: 50%;
+  overflow: hidden;
+  flex: 0 0 auto;
+  background: var(--paper-edge);
+  box-shadow: 0 0 0 2px var(--gold), 0 0 0 4px var(--paper);
+}
+.splitmed__half {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+/* diagonal split: top-left triangle vs bottom-right triangle */
+.splitmed__half--a { clip-path: polygon(0 0, 100% 0, 0 100%); }
+.splitmed__half--b { clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+.splitmed__slash {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top right, transparent calc(50% - 1px), var(--paper) calc(50% - 1px), var(--paper) calc(50% + 1px), transparent calc(50% + 1px));
+}

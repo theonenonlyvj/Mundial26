@@ -18,7 +18,7 @@ export default function MapView() {
   const [selected, setSelected] = useState(null);
   const advByTeam = useAdvByTeam();
   const { data, dataAsOf, error } = useLiveData('cities', () =>
-    Promise.all([getReference(), getMatches()]).then(([ref, m]) => ({ hostCities: ref.hostCities, matches: m.matches })));
+    Promise.all([getReference(), getMatches()]).then(([ref, m]) => ({ hostCities: ref.hostCities, matches: m.matches, stale: m.stale })));
   const hostCities = data?.hostCities ?? null;
   const matches = data?.matches ?? [];
 
