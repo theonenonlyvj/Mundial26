@@ -15,7 +15,9 @@ export function pickMatchToWatch(matches, now = new Date().toISOString()) {
     .filter((m) => !LIVE.has(m.status) && !FINISHED.has(m.status) && m.utcDate >= now)
     .sort(byKickoff);
   if (upcoming.length) {
-    const next = upcoming[0];
+    // Prefer the next match with an actual team — never headline a "TBD vs TBD".
+    const named = upcoming.filter((m) => m.home?.id || m.away?.id);
+    const next = named[0] ?? upcoming[0];
     const knockout = next.stage && next.stage !== 'GROUP_STAGE';
     return { match: next, reason: knockout ? 'Up next — win or go home' : 'Up next' };
   }
