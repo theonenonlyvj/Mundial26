@@ -99,6 +99,22 @@ describe('advancementStatus (incomplete — no false clinch when 2+ others can r
   });
 });
 
+describe('advancementStatus (incomplete — a tie is not a threat)', () => {
+  it('clinches top two when rivals can only tie, never exceed (the Argentina case)', () => {
+    // a: 6pts P2, GD+5. b & c on 3pts can reach 6 (a TIE) but never exceed; d on 0.
+    const ranked = rankGroup([
+      row({ id: 'a', played: 2, points: 6, goalDifference: 5 }),
+      row({ id: 'b', played: 2, points: 3, goalDifference: 0 }),
+      row({ id: 'c', played: 2, points: 3, goalDifference: -2 }),
+      row({ id: 'd', played: 2, points: 0, goalDifference: -3 }),
+    ]);
+    const out = advancementStatus(ranked);
+    expect(out.find((r) => r.team.id === 'a').status).toBe('through');
+    // rivals themselves are still genuinely alive (they can yet exceed each other)
+    expect(out.find((r) => r.team.id === 'b').status).toBe('alive');
+  });
+});
+
 describe('bestThirds (small field)', () => {
   it('returns all thirds when fewer than 8 groups exist', () => {
     // Only 3 groups — bestThirds must return all 3 third-place teams, not pad to 8
