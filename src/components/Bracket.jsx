@@ -1,51 +1,24 @@
-import { useEffect, useRef } from 'react';
-import { knockoutRounds } from '../lib/bracket.js';
-import MatchSticker from './MatchSticker.jsx';
-import './Bracket.css';
+import { resolveBracket } from '../lib/bracketTree.js';
+import { COLUMNS, COLUMN_ORDER } from '../data/bracket2026.js';
+import { useMediaQuery } from '../hooks/useMediaQuery.js';
+import BracketTree from './BracketTree.jsx';
+import BracketColumns from './BracketColumns.jsx';
 
 const DONE = new Set(['FINISHED', 'AWARDED']);
 
-export default function Bracket({ matches }) {
-  const rounds = knockoutRounds(matches);
-  const wrapRef = useRef(null);
+// Responsive knockout bracket. Wide screens get the drawn connector tree; narrow
+// screens get round-by-round columns. Both share the same resolved topology, so
+// teams/scores and the tap-to-trace path are identical.
+export default function Bracket({ matches = [], standings = null }) {
+  const ko = matches.filter((m) => m.stage !== 'GROUP_STAGE');
+  const { nodes } = resolveBracket(ko, standings);
+  const wide = useMediaQuery('(min-width: 920px)');
 
-  // The "current" round is the earliest one that still has a match to play
-  // (else the last round, once the tournament is done).
-  const currentIdx = (() => {
-    const i = rounds.findIndex((r) => r.matches.some((m) => !DONE.has(m.status)));
-    return i === -1 ? rounds.length - 1 : i;
-  })();
+  const currentRound = COLUMNS.find((r) =>
+    COLUMN_ORDER[r].some((no) => { const n = nodes.get(no); return n.match && !DONE.has(n.status); }),
+  ) ?? 'LAST_32';
 
-  // On open, scroll the current round to the left edge so you start where the
-  // action is rather than always at Round of 32.
-  useEffect(() => {
-    const wrap = wrapRef.current;
-    if (!wrap) return;
-    const scroller = wrap.querySelector('.bracket');
-    const current = wrap.querySelector('[data-current="true"]');
-    if (scroller && current) scroller.scrollLeft = Math.max(0, current.offsetLeft - 4);
-  }, [rounds.length, currentIdx]);
-
-  if (!rounds.length) {
-    return <p style={{ color: 'var(--muted)' }}>The knockout bracket fills in once the groups finish. 🏆</p>;
-  }
-  return (
-    <div className="bracket-wrap" ref={wrapRef}>
-      {rounds.length > 1 && (
-        <p className="bracket__hint">Scroll sideways to move through the rounds →</p>
-      )}
-      <div className="bracket">
-        {rounds.map((round, i) => (
-          <div
-            className="bracket__round"
-            key={round.stage}
-            data-current={i === currentIdx ? 'true' : undefined}
-          >
-            <h3>{round.label}</h3>
-            {round.matches.map((m) => <MatchSticker key={m.id} match={m} showStage={false} />)}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  return wide
+    ? <BracketTree nodes={nodes} currentRound={currentRound} />
+    : <BracketColumns nodes={nodes} currentRound={currentRound} />;
 }
