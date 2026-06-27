@@ -1,7 +1,6 @@
 import { getMatches } from '../api/client.js';
 import { useLiveData } from '../hooks/useLiveData.js';
 import { bucketMatches } from '../lib/matchTime.js';
-import { selectComingUp } from '../lib/comingUp.js';
 import { advancementForMatch } from '../lib/advancement.js';
 import { useAdvByTeam } from '../hooks/useAdvByTeam.js';
 import { useKnockoutDisplay } from '../hooks/useKnockoutDisplay.js';
@@ -36,11 +35,11 @@ export default function TodayView({
   if (!matches) return <section aria-label="Today">Loading today's matches…</section>;
 
   const { today, recent, upcoming } = bucketMatches(matches, now, timeZone);
-  // "Coming Up" = the next handful of upcoming matches that have something to
-  // show — a decided team or a resolvable knockout seed ("Grp K · 1st" / "A OR
-  // B" / "Winner R32"). selectComingUp filters the WHOLE list first, then caps,
-  // so a decided match never gets hidden behind a wall of TBD knockout slots.
-  const comingUp = selectComingUp(upcoming, koDisplay);
+  // "Coming Up" = simply the next matches on the schedule. No filtering — every
+  // knockout fixture is anchored to its bracket slot, so undecided sides render
+  // their seed label ("Grp K · 1st" / "Canada OR South Africa" / "Winner R32")
+  // instead of a bare TBD. The full schedule lives in Timeline.
+  const comingUp = upcoming.slice(0, 8);
 
   return (
     <section aria-label="Today">
