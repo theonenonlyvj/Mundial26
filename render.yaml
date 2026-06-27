@@ -29,7 +29,10 @@ services:
 
   # --- New SPA static site (CDN, always-on, no spin-down) ---
   # The fast URL to share going forward. Calls the web service above for data.
-  - type: static
+  # Static sites use type:web + runtime:static in the current Render schema
+  # (the old `type: static` keyword is no longer accepted by the blueprint parser).
+  - type: web
+    runtime: static
     name: mundial26-app
     # --include=dev so vite/react build plugins (devDependencies) are installed.
     buildCommand: npm install --include=dev && npm run build
