@@ -146,7 +146,19 @@
     max-width: 1100px;
   }
   .cities__picker-mobile { display: none; }      /* drop the dropdown */
-  .cities__browser { display: grid; gap: 18px; } /* show the list (left column) */
+  /* The city list is its own scroll region, pinned below the sticky header, so
+     scrolling down to a city at the bottom never drags the matches out of view. */
+  .cities__browser {
+    display: grid;
+    gap: 18px;
+    position: sticky;
+    top: 7rem;                                    /* clears the sticky header */
+    max-height: calc(100vh - 7rem - 1rem);
+    max-height: calc(100dvh - 7rem - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;                 /* don't chain to the page */
+    padding-right: 6px;                           /* room for the scrollbar */
+  }
   /* Let the chosen city's matches use the wide right column. */
   .cities__matches { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
 }
