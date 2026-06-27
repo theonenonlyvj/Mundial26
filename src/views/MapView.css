@@ -43,17 +43,20 @@
   margin: 0 0 8px;
 }
 
+/* Wrapping grid of compact chips — keeps each chip a sensible width on wide
+   desktops instead of one full-pane-width chip per row. */
 .cities__chips {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
 }
 
 .cities__chip {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 9px 12px;
   background: var(--paper);
   border: 2px solid var(--paper-edge);
   border-radius: var(--sticker-radius);
@@ -61,6 +64,8 @@
   text-align: left;
   transition: border-color 0.15s, background 0.15s;
 }
+
+.cities__chip-main { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 
 .cities__chip:hover {
   border-color: var(--out);
@@ -80,16 +85,15 @@
 .cities__chip-name {
   font-weight: 700;
   font-size: 0.95rem;
-  flex: 1;
+  line-height: 1.15;
 }
 
 .cities__chip-stadium {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
 }
 
 .cities__chip-count {
