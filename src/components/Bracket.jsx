@@ -1,15 +1,31 @@
 import { useEffect, useRef } from 'react';
 import { buildKnockout } from '../lib/knockoutDisplay.js';
 import { COLUMNS, COLUMN_ORDER, ROUND_LABEL } from '../data/bracket2026.js';
-import KnockoutCard from './KnockoutCard.jsx';
+import MatchSticker from './MatchSticker.jsx';
+import StickerCard from './StickerCard.jsx';
+import TeamSticker from './TeamSticker.jsx';
 import './Bracket.css';
 
 const ROUNDS = [...COLUMNS, 'THIRD_PLACE'];
 const DONE = new Set(['FINISHED', 'AWARDED']);
 
-// Plain round-by-round bracket built from the verified 2026 topology, so undecided
-// slots show their seed ("Grp K · 1st", "3rd place") and Round-of-16 cards show
-// "A OR B" with a split flag once their Round-of-32 tie is set.
+// Undecided slot (no live fixture yet): same card shell + team primitives as a
+// real match, minus the score/venue we don't have.
+function SlotPlaceholder({ home, away }) {
+  return (
+    <StickerCard>
+      <div className="match" style={{ position: 'relative', zIndex: 1 }}>
+        <TeamSticker team={null} display={home} />
+        <div className="match__mid"><span className="match__time">vs</span></div>
+        <TeamSticker team={null} align="right" display={away} />
+      </div>
+    </StickerCard>
+  );
+}
+
+// Plain round-by-round bracket. Decided matches render the SAME MatchSticker used
+// across Today/Timeline/Cities (time, city, TV, score, live phase) with the
+// knockout seed enrichment on any undecided side; future slots show a placeholder.
 export default function Bracket({ matches = [], standings = null }) {
   const { nodes } = buildKnockout(matches, standings);
   const wrapRef = useRef(null);
@@ -31,7 +47,13 @@ export default function Bracket({ matches = [], standings = null }) {
         {ROUNDS.map((round) => (
           <div className="bracket__round" key={round} data-current={round === currentRound ? 'true' : undefined}>
             <h3>{ROUND_LABEL[round]}</h3>
-            {COLUMN_ORDER[round].map((no) => <KnockoutCard key={no} node={nodes.get(no)} />)}
+            {COLUMN_ORDER[round].map((no) => {
+              const n = nodes.get(no);
+              const ko = { home: n.homeDisplay, away: n.awayDisplay };
+              return n.match
+                ? <MatchSticker key={no} match={n.match} showStage={false} knockout={ko} />
+                : <SlotPlaceholder key={no} home={n.homeDisplay} away={n.awayDisplay} />;
+            })}
           </div>
         ))}
       </div>
