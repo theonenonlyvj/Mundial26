@@ -20,10 +20,16 @@ export function useLiveData(key, fetcher) {
       .then(fetcher)
       .then((fresh) => {
         if (!active) return;
-        setData(fresh);
-        writeCache(key, fresh);
-        setDataAsOf(Date.now());
         setError(null);
+        // Never downgrade good data to a `stale` response — the API serves an
+        // ancient fallback snapshot when it hiccups on cold start, which would
+        // flash the page to all-TBD. Keep what we have in that case.
+        setData((prev) => {
+          if (fresh?.stale && prev != null) return prev;
+          writeCache(key, fresh);
+          return fresh;
+        });
+        if (!fresh?.stale) setDataAsOf(Date.now());
       })
       .catch((e) => { if (active) setError(e?.message ?? String(e)); });
     return () => { active = false; };

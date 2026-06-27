@@ -10,7 +10,7 @@ import { defineTerm } from '../explainer/glossary.js';
 
 export default function StandingsView() {
   const { data, dataAsOf, error } = useLiveData('standings', () =>
-    Promise.all([getStandings(), getMatches()]).then(([s, m]) => ({ standings: s, matches: m.matches })));
+    Promise.all([getStandings(), getMatches()]).then(([s, m]) => ({ standings: s, matches: m.matches, stale: s.stale ?? m.stale })));
   const standings = data?.standings ?? null;
   const matches = data?.matches ?? [];
 
@@ -38,7 +38,7 @@ export default function StandingsView() {
   const bracket = (
     <>
       <h2 style={{ marginTop: 0 }}>Knockout bracket</h2>
-      <Bracket matches={matches} />
+      <Bracket matches={matches} standings={standings} />
     </>
   );
 

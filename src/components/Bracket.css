@@ -28,10 +28,10 @@
 
 .bracket__round {
   flex: 0 0 auto;
-  width: min(86vw, 300px);
+  width: min(88vw, 340px);
   scroll-snap-align: start;
   display: grid;
-  gap: 12px;
+  gap: 14px;
   align-content: start;
 }
 .bracket__round h3 { margin: 0; text-transform: uppercase; color: var(--muted); }
