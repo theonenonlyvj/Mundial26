@@ -39,9 +39,14 @@ async function readSnapshot(env) {
 
 // What we treat as a meaningful change (skip KV writes otherwise — KV free tier
 // is 1k writes/day). standings + scorers derive from match results, so this
-// covers goals, status flips, and qualifications.
+// covers goals, status flips, and qualifications. Excludes updatedAt/stale so
+// that a no-change cron tick at a later timestamp doesn't trigger a spurious write.
 function signature(snap) {
-  return JSON.stringify([snap.matches.matches, snap.standings, snap.scorers]);
+  return JSON.stringify([
+    snap.matches.matches,
+    { groups: snap.standings?.groups, bestThirdIds: snap.standings?.bestThirdIds },
+    snap.scorers?.scorers,
+  ]);
 }
 
 // Cron body: refresh ONLY while a match is live/imminent (or to bootstrap an

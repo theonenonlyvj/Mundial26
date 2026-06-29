@@ -1,5 +1,55 @@
 import { describe, it, expect } from 'vitest';
 import { handleRequest } from './index.js';
+import { runScheduled } from './index.js';
+
+// In-memory KV mock.
+function kv(initial) {
+  const store = new Map(initial ? [['snapshot:v1', JSON.stringify(initial)]] : []);
+  return { store, get: async (k) => store.get(k) ?? null, put: async (k, v) => void store.set(k, v) };
+}
+const KO = '2026-06-29T18:00:00Z';
+const koMs = Date.parse(KO);
+const schedule = { matches: { matches: [{ id: 1, utcDate: KO, status: 'TIMED' }] } };
+
+// fetchImpl that returns a one-match live snapshot (status from `status`).
+function liveFetch(status, scoreHome) {
+  return async (url) => {
+    const p = url.replace('https://api.football-data.org/v4', '');
+    const bodies = {
+      '/competitions/WC/matches': { matches: [{ id: 1, utcDate: KO, status, stage: 'GROUP_STAGE', homeTeam: { id: 9, name: 'A' }, awayTeam: { id: 8, name: 'B' }, score: { winner: null, fullTime: { home: scoreHome ?? null, away: null }, halfTime: {} } }] },
+      '/competitions/WC/standings': { standings: [] },
+      '/competitions/WC/scorers': { scorers: [] },
+    };
+    return { ok: true, status: 200, json: async () => bodies[p] };
+  };
+}
+
+describe('runScheduled', () => {
+  it('no-ops when prior data exists and no match is in window', async () => {
+    const env = { DATA: kv(schedule), FOOTBALL_DATA_API_KEY: 'k' };
+    const r = await runScheduled({ env, nowMs: koMs - 60 * 60_000, fetchImpl: liveFetch('TIMED') });
+    expect(r.skipped).toBe(true);
+  });
+  it('writes a snapshot when a match is in window', async () => {
+    const env = { DATA: kv(schedule), FOOTBALL_DATA_API_KEY: 'k' };
+    const r = await runScheduled({ env, nowMs: koMs + 30 * 60_000, fetchImpl: liveFetch('IN_PLAY', 1) });
+    expect(r.written).toBe(true);
+    const stored = JSON.parse(env.DATA.store.get('snapshot:v1'));
+    expect(stored.matches.matches[0].score.home).toBe(1);
+    expect(stored.at).toBe(koMs + 30 * 60_000);
+  });
+  it('skips the write when nothing changed', async () => {
+    const env = { DATA: kv(schedule), FOOTBALL_DATA_API_KEY: 'k' };
+    await runScheduled({ env, nowMs: koMs + 30 * 60_000, fetchImpl: liveFetch('IN_PLAY', 1) }); // first write
+    const r = await runScheduled({ env, nowMs: koMs + 31 * 60_000, fetchImpl: liveFetch('IN_PLAY', 1) }); // same data
+    expect(r.unchanged).toBe(true);
+  });
+  it('bootstraps when KV is empty even outside a window', async () => {
+    const env = { DATA: kv(null), FOOTBALL_DATA_API_KEY: 'k' };
+    const r = await runScheduled({ env, nowMs: koMs - 60 * 60_000, fetchImpl: liveFetch('TIMED') });
+    expect(r.written).toBe(true);
+  });
+});
 
 const SNAP = {
   at: 1234,
