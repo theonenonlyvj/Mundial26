@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { handleRequest } from './index.js';
-import { runScheduled } from './index.js';
+import { handleRequest, runScheduled } from './index.js';
 
 // In-memory KV mock.
 function kv(initial) {
@@ -48,6 +47,13 @@ describe('runScheduled', () => {
     const env = { DATA: kv(null), FOOTBALL_DATA_API_KEY: 'k' };
     const r = await runScheduled({ env, nowMs: koMs - 60 * 60_000, fetchImpl: liveFetch('TIMED') });
     expect(r.written).toBe(true);
+  });
+  it('keeps the prior snapshot and reports error when the upstream fetch fails in-window', async () => {
+    const env = { DATA: kv(schedule), FOOTBALL_DATA_API_KEY: 'k' };
+    const failing = async () => ({ ok: false, status: 500, json: async () => ({}) });
+    const r = await runScheduled({ env, nowMs: koMs + 30 * 60_000, fetchImpl: failing });
+    expect(r).toEqual({ skipped: true, error: true });
+    expect(JSON.parse(env.DATA.store.get('snapshot:v1'))).toEqual(schedule); // prior untouched
   });
 });
 

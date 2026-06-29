@@ -43,7 +43,7 @@ async function readSnapshot(env) {
 // that a no-change cron tick at a later timestamp doesn't trigger a spurious write.
 function signature(snap) {
   return JSON.stringify([
-    snap.matches.matches,
+    snap.matches?.matches,
     { groups: snap.standings?.groups, bestThirdIds: snap.standings?.bestThirdIds },
     snap.scorers?.scorers,
   ]);
