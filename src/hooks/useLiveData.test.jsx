@@ -39,12 +39,15 @@ describe('useLiveData', () => {
 
   it('re-fetches on the refresh interval when refreshMs is set', async () => {
     vi.useFakeTimers();
-    const fetcher = vi.fn().mockResolvedValue({ stale: false, matches: [] });
-    renderHook(() => useLiveData('matches', fetcher, { refreshMs: 60_000 }));
-    await vi.advanceTimersByTimeAsync(0);
-    expect(fetcher).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(60_000);
-    expect(fetcher).toHaveBeenCalledTimes(2);
-    vi.useRealTimers();
+    try {
+      const fetcher = vi.fn().mockResolvedValue({ stale: false, matches: [] });
+      renderHook(() => useLiveData('matches', fetcher, { refreshMs: 60_000 }));
+      await vi.advanceTimersByTimeAsync(0);
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers(); // restore even if an assertion throws, so timers don't leak into other tests
+    }
   });
 });
