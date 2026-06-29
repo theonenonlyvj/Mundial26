@@ -59,12 +59,16 @@ export async function runScheduled({ env, nowMs, fetchImpl = fetch }) {
   let snap;
   try {
     snap = await buildSnapshot({ apiKey: env.FOOTBALL_DATA_API_KEY, fetchImpl, now: () => nowMs });
-  } catch {
-    return { skipped: true, error: true }; // keep the prior snapshot
+  } catch (e) {
+    // Set-and-forget service: surface upstream failures (e.g. a rotated key 401ing
+    // mid-tournament) so `wrangler tail` shows them. We still keep the prior snapshot.
+    console.error('mundial26 cron: football-data fetch failed, keeping prior snapshot:', e?.message ?? String(e));
+    return { skipped: true, error: true };
   }
 
   if (prior && signature(prior) === signature(snap)) return { unchanged: true };
   await env.DATA.put(KEY, JSON.stringify({ at: nowMs, ...snap }));
+  console.log('mundial26 cron: snapshot updated at', nowMs);
   return { written: true };
 }
 
