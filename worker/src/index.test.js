@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { handleRequest, runScheduled } from './index.js';
 
 // In-memory KV mock.
@@ -24,6 +24,13 @@ function liveFetch(status, scoreHome) {
 }
 
 describe('runScheduled', () => {
+  let logSpy; let errSpy;
+  beforeEach(() => {
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+  afterEach(() => { logSpy.mockRestore(); errSpy.mockRestore(); });
+
   it('no-ops when prior data exists and no match is in window', async () => {
     const env = { DATA: kv(schedule), FOOTBALL_DATA_API_KEY: 'k' };
     const r = await runScheduled({ env, nowMs: koMs - 60 * 60_000, fetchImpl: liveFetch('TIMED') });
@@ -54,6 +61,7 @@ describe('runScheduled', () => {
     const r = await runScheduled({ env, nowMs: koMs + 30 * 60_000, fetchImpl: failing });
     expect(r).toEqual({ skipped: true, error: true });
     expect(JSON.parse(env.DATA.store.get('snapshot:v1'))).toEqual(schedule); // prior untouched
+    expect(errSpy).toHaveBeenCalled(); // failure is surfaced for observability
   });
 });
 
