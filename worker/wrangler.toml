@@ -3,7 +3,7 @@ main = "src/index.js"
 compatibility_date = "2026-06-29"
 
 kv_namespaces = [
-  { binding = "DATA", id = "PLACEHOLDER_SET_IN_TASK_5" }
+  { binding = "DATA", id = "ec901d6b56964e9499b00dea8c5f0dda" }
 ]
 
 [triggers]
