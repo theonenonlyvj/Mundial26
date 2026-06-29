@@ -6,7 +6,6 @@ import TimelineView from './views/TimelineView.jsx';
 import MapView from './views/MapView.jsx';
 import ScorersView from './views/ScorersView.jsx';
 import HowItWorks from './explainer/HowItWorks.jsx';
-import ColdStartBanner from './components/ColdStartBanner.jsx';
 
 const VIEWS = [
   { key: 'today', label: 'Today' },
@@ -21,7 +20,6 @@ export default function App() {
   const [showHelp, setShowHelp] = useState(false);
   return (
     <div className="app">
-      <ColdStartBanner />
       <header className="app__header">
         <h1>Mundial26</h1>
         <nav className="app__nav">
