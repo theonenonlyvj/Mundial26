@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, act, waitFor, renderHook } from '@testing-library/react';
 import { useLiveData } from './useLiveData.js';
 import { writeCache } from '../api/dataCache.js';
 
@@ -35,5 +35,16 @@ describe('useLiveData', () => {
     render(<Probe fetcher={() => Promise.reject(new Error('asleep'))} />);
     await waitFor(() => expect(screen.getByTestId('err').textContent).toBe('asleep'));
     expect(screen.getByTestId('val').textContent).toBe('cached');
+  });
+
+  it('re-fetches on the refresh interval when refreshMs is set', async () => {
+    vi.useFakeTimers();
+    const fetcher = vi.fn().mockResolvedValue({ stale: false, matches: [] });
+    renderHook(() => useLiveData('matches', fetcher, { refreshMs: 60_000 }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
   });
 });
