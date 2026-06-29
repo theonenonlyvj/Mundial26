@@ -1,0 +1,10 @@
+name = "mundial26-data"
+main = "src/index.js"
+compatibility_date = "2026-06-29"
+
+kv_namespaces = [
+  { binding = "DATA", id = "PLACEHOLDER_SET_IN_TASK_5" }
+]
+
+[triggers]
+crons = ["* * * * *"]
