@@ -27,7 +27,7 @@ export default function TodayView({
   timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
 }) {
   const advByTeam = useAdvByTeam();
-  const { data, dataAsOf, error } = useLiveData('matches', getMatches);
+  const { data, dataAsOf, error } = useLiveData('matches', getMatches, { refreshMs: 60_000 });
   const matches = data?.matches ?? null;
   const koDisplay = useKnockoutDisplay(matches);
 
