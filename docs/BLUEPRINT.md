@@ -67,8 +67,19 @@ This is where all the real pain was. Free sports APIs are not just *slow* — th
   penalties" garbage → finally settle correctly. The `winner` field was `null` while
   the score implied a winner; `fullTime` was an *aggregate* (regulation + shootout),
   not a real score; the `penalties` field was tied (impossible) for a decided tie.
-- **It can REGRESS.** A result that was correct can later become garbage. A "decided"
-  result can flip back to "undecided."
+- **It can REGRESS, and it FLAPS.** A correct result can later become garbage. A
+  "decided" result flips back to "undecided" — and worse, we saw a FINISHED match
+  (Ivory Coast–Norway) **oscillate FINISHED 1-2 ↔ TIMED null-null every single minute
+  for hours.** So the site would show "Norway won" then "kickoff Tuesday" then "Norway
+  won"… The fix: treat a *settled* result (finished + scores + a winner) as sticky —
+  never let it regress to a non-settled state — *unless* the new read carries a real,
+  present, **different** score (a legitimate VAR/called-back-goal change). The log is
+  what caught the flap; we'd never have seen it otherwise.
+- **It fills derived/intermediate records inconsistently.** Some next-round fixtures
+  got their teams populated, adjacent ones stayed TBD — arbitrarily. Don't depend on
+  the feed to populate downstream slots. **Compute forward yourself** (winner of a
+  decided match → the next round's competitors) and let the feed's own value win only
+  where it actually provides one.
 
 **Rules that fell out of this (each one cost us a live, embarrassing bug):**
 
