@@ -28,7 +28,7 @@ export default function ScorersView() {
         <ol className="scorers__list">
           {scorers.map((s, i) => (
             <li key={`${s.name}-${s.team.tla ?? i}`} className={`scorer ${s.rank === 1 ? 'scorer--leader' : ''}`}>
-              <span className="scorer__rank" aria-label={`Rank ${s.rank}`}>{s.rank === 1 ? '👑' : s.rank}</span>
+              <span className="scorer__rank" aria-label={`Rank ${s.rank}`}>{s.rank === 1 ? <Emoji code="1F451" label="crown" /> : s.rank}</span>
               <span className="scorer__badge" aria-hidden="true">
                 {s.team.crest ? <img src={s.team.crest} alt="" /> : (s.team.tla ?? '??')}
               </span>

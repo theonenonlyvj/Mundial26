@@ -25,7 +25,7 @@ describe('ScorersView', () => {
     const items = screen.getAllByRole('listitem');
     // Messi (5) ranks above Mbappé (3) despite input order.
     expect(items[0]).toHaveTextContent('Lionel Messi');
-    expect(items[0]).toHaveTextContent('👑');
+    expect(items[0].querySelector('img[alt="crown"]')).not.toBeNull();
     expect(items[0]).toHaveTextContent('5');
     expect(items[1]).toHaveTextContent('Kylian Mbappé');
   });
