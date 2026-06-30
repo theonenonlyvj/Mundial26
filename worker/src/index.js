@@ -49,6 +49,56 @@ function signature(snap) {
   ]);
 }
 
+// Which matches changed state vs the prior snapshot (status/score/winner/duration/
+// penalties) — one log row gets appended per change.
+export function changedMatches(prior, snap) {
+  const pById = new Map((prior?.matches?.matches ?? []).map((m) => [m.id, m]));
+  const sig = (m) => JSON.stringify([m.status, m.score?.home, m.score?.away, m.score?.winner, m.score?.duration, m.score?.penalties?.home, m.score?.penalties?.away]);
+  return (snap?.matches?.matches ?? []).filter((m) => {
+    const p = pById.get(m.id);
+    return !p || sig(p) !== sig(m);
+  });
+}
+
+// Append the changed matches to the D1 log. Best-effort: a log failure must NEVER
+// break the live snapshot update, so it's wrapped + swallowed (with a console line).
+async function logChanges(env, nowMs, changed) {
+  if (!env?.LOGDB || !changed.length) return;
+  try {
+    const stmt = env.LOGDB.prepare(
+      'INSERT INTO match_log (ts, match_id, home, away, stage, status, duration, home_score, away_score, winner, pens_home, pens_away) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+    );
+    await env.LOGDB.batch(changed.map((m) => stmt.bind(
+      nowMs, m.id,
+      m.home?.tla ?? m.home?.name ?? null, m.away?.tla ?? m.away?.name ?? null,
+      m.stage ?? null, m.status ?? null, m.score?.duration ?? null,
+      m.score?.home ?? null, m.score?.away ?? null, m.score?.winner ?? null,
+      m.score?.penalties?.home ?? null, m.score?.penalties?.away ?? null,
+    )));
+  } catch (e) {
+    console.error('mundial26 cron: D1 log write failed:', e?.message ?? String(e));
+  }
+}
+
+// Read-only log endpoint: GET /api/log?match=<id>&limit=N -> JSON rows (newest first).
+async function handleLog(req, env) {
+  if (!env?.LOGDB) return json({ error: 'log db not configured' });
+  const url = new URL(req.url);
+  const matchId = url.searchParams.get('match');
+  const limit = Math.min(Number(url.searchParams.get('limit')) || 200, 2000);
+  try {
+    const q = matchId
+      ? env.LOGDB.prepare('SELECT * FROM match_log WHERE match_id = ? ORDER BY ts DESC, id DESC LIMIT ?').bind(Number(matchId), limit)
+      : env.LOGDB.prepare('SELECT * FROM match_log ORDER BY ts DESC, id DESC LIMIT ?').bind(limit);
+    const { results } = await q.all();
+    return new Response(JSON.stringify({ count: results.length, rows: results }), {
+      headers: { 'content-type': 'application/json', 'cache-control': 'no-store', ...CORS },
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: { 'content-type': 'application/json', ...CORS } });
+  }
+}
+
 // Block ONLY the specific free-tier wobble: a FINISHED knockout that HAD a
 // decisive winner suddenly reports winner:null while the score is UNCHANGED.
 // Anything that represents a real change is taken as-is:
@@ -91,6 +141,7 @@ export async function runScheduled({ env, nowMs, fetchImpl = fetch }) {
 
   snap = preserveDecided(prior, snap);
   if (prior && signature(prior) === signature(snap)) return { unchanged: true };
+  await logChanges(env, nowMs, changedMatches(prior, snap));
   await env.DATA.put(KEY, JSON.stringify({ at: nowMs, ...snap }));
   console.log('mundial26 cron: snapshot updated at', nowMs);
   return { written: true };
@@ -101,6 +152,7 @@ export default {
     ctx.waitUntil(runScheduled({ env, nowMs: Date.now(), fetchImpl: fetch }));
   },
   async fetch(req, env) {
+    if (new URL(req.url).pathname === '/api/log') return handleLog(req, env);
     const snap = await readSnapshot(env);
     return handleRequest(req, snap);
   },

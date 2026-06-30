@@ -1,10 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { handleRequest, runScheduled } from './index.js';
+import worker, { handleRequest, runScheduled, changedMatches } from './index.js';
 
 // In-memory KV mock.
 function kv(initial) {
   const store = new Map(initial ? [['snapshot:v1', JSON.stringify(initial)]] : []);
   return { store, get: async (k) => store.get(k) ?? null, put: async (k, v) => void store.set(k, v) };
+}
+// Minimal D1 mock: records batch() inserts, and replays `rows` for SELECT .all().
+function mockD1(rows = []) {
+  const inserted = [];
+  return {
+    inserted,
+    prepare: () => ({ bind: (...args) => ({ args, all: async () => ({ results: rows }) }) }),
+    batch: async (stmts) => { inserted.push(...stmts.map((s) => s.args)); },
+  };
 }
 const KO = '2026-06-29T18:00:00Z';
 const koMs = Date.parse(KO);
@@ -138,5 +147,43 @@ describe('handleRequest', () => {
   });
   it('404s an unknown path', async () => {
     expect((await handleRequest(get('/nope'), SNAP)).status).toBe(404);
+  });
+});
+
+describe('game-state logging', () => {
+  let logSpy;
+  beforeEach(() => { logSpy = vi.spyOn(console, 'log').mockImplementation(() => {}); });
+  afterEach(() => logSpy.mockRestore());
+  const M = (over) => ({ id: 9, status: 'IN_PLAY', stage: 'LAST_32', home: { tla: 'A' }, away: { tla: 'B' }, score: { home: 0, away: 0, winner: null, duration: 'REGULAR', penalties: null }, ...over });
+
+  it('changedMatches flags status/score/winner/duration changes, ignores unchanged', () => {
+    const prior = { matches: { matches: [M()] } };
+    expect(changedMatches(prior, { matches: { matches: [M()] } })).toHaveLength(0); // identical
+    expect(changedMatches(prior, { matches: { matches: [M({ score: { home: 1, away: 0, duration: 'REGULAR' } })] } })).toHaveLength(1); // goal
+    expect(changedMatches(prior, { matches: { matches: [M({ score: { home: 0, away: 0, duration: 'EXTRA_TIME' } })] } })).toHaveLength(1); // phase
+    expect(changedMatches(null, { matches: { matches: [M()] } })).toHaveLength(1); // new match (bootstrap)
+  });
+
+  it('runScheduled appends a row per changed match to D1', async () => {
+    const env = { DATA: kv(schedule), FOOTBALL_DATA_API_KEY: 'k', LOGDB: mockD1() };
+    const liveFetch = async (url) => {
+      const p = url.replace('https://api.football-data.org/v4', '');
+      const bodies = {
+        '/competitions/WC/matches': { matches: [{ id: 1, utcDate: KO, status: 'IN_PLAY', stage: 'GROUP_STAGE', homeTeam: { id: 9, name: 'A' }, awayTeam: { id: 8, name: 'B' }, score: { winner: null, duration: 'REGULAR', fullTime: { home: 1, away: 0 }, halfTime: {} } }] },
+        '/competitions/WC/standings': { standings: [] },
+        '/competitions/WC/scorers': { scorers: [] },
+      };
+      return { ok: true, status: 200, json: async () => bodies[p] };
+    };
+    await runScheduled({ env, nowMs: koMs + 30 * 60_000, fetchImpl: liveFetch });
+    expect(env.LOGDB.inserted.length).toBe(1); // match 1 changed -> one log row
+    expect(env.LOGDB.inserted[0]).toContain(1); // match_id present in the bound row
+  });
+
+  it('GET /api/log returns rows as JSON', async () => {
+    const rows = [{ id: 2, ts: 100, match_id: 9, status: 'FINISHED', winner: 'AWAY_TEAM' }];
+    const res = await worker.fetch(new Request('https://w.dev/api/log?match=9'), { LOGDB: mockD1(rows) });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ count: 1, rows });
   });
 });

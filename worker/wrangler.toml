@@ -6,5 +6,10 @@ kv_namespaces = [
   { binding = "DATA", id = "ec901d6b56964e9499b00dea8c5f0dda" }
 ]
 
+[[d1_databases]]
+binding = "LOGDB"
+database_name = "mundial26-log"
+database_id = "96d3c403-c678-479f-9e76-bc5011bc964d"
+
 [triggers]
 crons = ["* * * * *"]

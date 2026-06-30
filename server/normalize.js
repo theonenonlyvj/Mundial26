@@ -52,6 +52,7 @@ export function normalizeMatch(m) {
       winner,
       shootout,
       penalties,
+      duration: s.duration ?? null, // REGULAR / EXTRA_TIME / PENALTY_SHOOTOUT — drives livePhase + the log
       halfTime: {
         home: s.halfTime?.home ?? null,
         away: s.halfTime?.away ?? null,
