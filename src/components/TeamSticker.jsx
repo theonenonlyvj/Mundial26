@@ -1,7 +1,11 @@
 import './TeamSticker.css';
 import FlagMosaic from './FlagMosaic.jsx';
+import Emoji from './Emoji.jsx';
 
-const ADV_LABEL = { through: 'Through ✅', out: 'Out ❌' };
+const ADV_LABEL = {
+  through: { text: 'Through', code: '2705', label: 'check mark' },
+  out: { text: 'Out', code: '274C', label: 'cross mark' },
+};
 
 export default function TeamSticker({ team, align = 'left', advancement = null, display = null }) {
   const cls = `team ${align === 'right' ? 'team--right' : ''}`.trim();
@@ -39,7 +43,7 @@ export default function TeamSticker({ team, align = 'left', advancement = null, 
       <span className="team__info">
         <span className="team__name">{resolvedTeam?.name ?? 'TBD'}</span>
         {advancement && ADV_LABEL[advancement] && (
-          <span className={`team__adv team__adv--${advancement}`}>{ADV_LABEL[advancement]}</span>
+          <span className={`team__adv team__adv--${advancement}`}>{ADV_LABEL[advancement].text} <Emoji code={ADV_LABEL[advancement].code} label={ADV_LABEL[advancement].label} /></span>
         )}
       </span>
     </span>
