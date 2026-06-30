@@ -71,4 +71,22 @@ describe('buildKnockout displays', () => {
     expect(d.teams.map((t) => t.tla).sort()).toEqual(['AUT', 'CRO', 'ESP', 'POR']);
     expect(d.label).toBe('POR/CRO or ESP/AUT');
   });
+
+  it('builds a WEIGHTED SF pool — closer teams get a bigger slice (the ¼/⅛ example)', () => {
+    // SF 101 home <- QF 97 <- R16 89 (PAR vs FRA/SWE) + R16 90 (CAN vs MOR).
+    // PAR/CAN/MOR already in R16 → ¼ each; FRA/SWE still owe an R32 → ⅛ each.
+    const matches = [
+      { id: 73, stage: 'LAST_32', status: 'FINISHED', utcDate: '2026-06-28T19:00:00Z', home: team(20, 'CAN'), away: team(99, 'X'), score: { winner: 'HOME_TEAM' }, city: { id: 'los-angeles' } },
+      { id: 74, stage: 'LAST_32', status: 'FINISHED', utcDate: '2026-06-29T20:00:00Z', home: team(21, 'PAR'), away: team(98, 'Y'), score: { winner: 'HOME_TEAM' }, city: { id: 'boston' } },
+      { id: 75, stage: 'LAST_32', status: 'FINISHED', utcDate: '2026-06-30T01:00:00Z', home: team(22, 'MOR'), away: team(97, 'Z'), score: { winner: 'HOME_TEAM' }, city: { id: 'monterrey' } },
+      { id: 77, stage: 'LAST_32', status: 'TIMED', utcDate: '2026-06-30T21:00:00Z', home: team(23, 'FRA'), away: team(24, 'SWE'), score: {}, city: { id: 'new-york' } },
+    ];
+    const d = buildKnockout(matches).nodes.get(101).homeDisplay;
+    expect(d.kind).toBe('pool');
+    const w = Object.fromEntries(d.teams.map((t, i) => [t.tla, d.weights[i]]));
+    expect(w.PAR).toBeCloseTo(0.25); expect(w.CAN).toBeCloseTo(0.25); expect(w.MOR).toBeCloseTo(0.25);
+    expect(w.FRA).toBeCloseTo(0.125); expect(w.SWE).toBeCloseTo(0.125);
+    expect(d.weights.reduce((s, x) => s + x, 0)).toBeCloseTo(1);
+    expect(d.label).toBe('PAR/FRA/SWE or CAN/MOR');
+  });
 });
