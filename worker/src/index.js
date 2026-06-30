@@ -99,24 +99,30 @@ async function handleLog(req, env) {
   }
 }
 
-// Block ONLY the specific free-tier wobble: a FINISHED knockout that HAD a
-// decisive winner suddenly reports winner:null while the score is UNCHANGED.
-// Anything that represents a real change is taken as-is:
-//   - a different score (a disallowed/added goal — e.g. a VAR/offside call-back),
-//   - a different decisive winner (a genuine correction),
-//   - the match reverting to in-play (status no longer FINISHED).
-// So a called-back goal always wins; only the pure "lost the winner flag with the
-// same score" garbage is ignored.
+// A SETTLED result = FINISHED/AWARDED, both scores present, and a winner (incl DRAW).
+function isSettledResult(m) {
+  const w = m?.score?.winner;
+  return (m?.status === 'FINISHED' || m?.status === 'AWARDED')
+    && m?.score?.home != null && m?.score?.away != null
+    && (w === 'HOME_TEAM' || w === 'AWAY_TEAM' || w === 'DRAW');
+}
+
+// Never let a settled result regress to garbage. The free tier flaps a finished
+// match back to "TIMED / null-null", or drops the winner flag, for minutes-to-hours
+// (observed live: CIV-NOR oscillating FINISHED<->TIMED every tick; NED-MAR going
+// FINISHED-decisive -> FINISHED-no-winner). Keep the prior settled result UNLESS the
+// new read is itself a clean settled result, OR carries a real, present, DIFFERENT
+// score — a legitimate VAR/called-back-goal change, which is always taken.
 function preserveDecided(prior, snap) {
   const priorMatches = prior?.matches?.matches;
   if (!priorMatches || !snap?.matches?.matches) return snap;
   const byId = new Map(priorMatches.map((m) => [m.id, m]));
   for (const m of snap.matches.matches) {
     const p = byId.get(m.id);
-    const sameScore = p?.score?.home === m?.score?.home && p?.score?.away === m?.score?.away;
-    if (isDecisive(p) && p.status === 'FINISHED' && m.status === 'FINISHED' && !isDecisive(m) && sameScore) {
-      m.score = p.score;
-    }
+    if (!isSettledResult(p) || isSettledResult(m)) continue;
+    const realChange = m.score?.home != null && m.score?.away != null
+      && (m.score.home !== p.score.home || m.score.away !== p.score.away);
+    if (!realChange) Object.assign(m, p); // garbage regression -> keep the settled result
   }
   return snap;
 }
