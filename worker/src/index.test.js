@@ -116,6 +116,28 @@ describe('runScheduled', () => {
     const m = JSON.parse(env.DATA.store.get('snapshot:v1')).matches.matches.find((x) => x.id === 73);
     expect([m.score.home, m.score.away]).toEqual([1, 0]); // the corrected score, NOT the preserved 1-1
   });
+  it('does NOT let a settled result regress to TIMED / null-null (CIV-NOR flapping)', async () => {
+    const settledPrior = {
+      matches: { matches: [{ id: 73, utcDate: KO, status: 'FINISHED', stage: 'LAST_32', home: { id: 1, name: 'A', tla: 'A' }, away: { id: 2, name: 'B', tla: 'B' }, score: { home: 1, away: 2, winner: 'AWAY_TEAM', duration: 'REGULAR' } }] },
+      standings: { groups: [], bestThirdIds: [] },
+      scorers: { scorers: [] },
+    };
+    // the feed flaps the finished match back to "not started", scores gone
+    const flap = async (url) => {
+      const p = url.replace('https://api.football-data.org/v4', '');
+      const bodies = {
+        '/competitions/WC/matches': { matches: [{ id: 73, utcDate: KO, status: 'TIMED', stage: 'LAST_32', homeTeam: { id: 1, name: 'A', tla: 'A' }, awayTeam: { id: 2, name: 'B', tla: 'B' }, score: { winner: null, duration: 'REGULAR', fullTime: { home: null, away: null }, halfTime: {} } }] },
+        '/competitions/WC/standings': { standings: [] },
+        '/competitions/WC/scorers': { scorers: [] },
+      };
+      return { ok: true, status: 200, json: async () => bodies[p] };
+    };
+    const env = { DATA: kv(settledPrior), FOOTBALL_DATA_API_KEY: 'k' };
+    await runScheduled({ env, nowMs: koMs + 30 * 60_000, fetchImpl: flap });
+    const m = JSON.parse(env.DATA.store.get('snapshot:v1')).matches.matches.find((x) => x.id === 73);
+    expect(m.status).toBe('FINISHED'); // kept settled, NOT regressed to TIMED
+    expect([m.score.home, m.score.away, m.score.winner]).toEqual([1, 2, 'AWAY_TEAM']);
+  });
 });
 
 const SNAP = {

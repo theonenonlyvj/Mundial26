@@ -1,5 +1,5 @@
 import {
-  R32_SLOTS, FEEDERS, ROUND_OF, ROUND_LABEL, COLUMN_ORDER, COLUMNS, slotLabel,
+  R32_SLOTS, FEEDERS, LOSER_FEED, ROUND_OF, ROUND_LABEL, COLUMN_ORDER, COLUMNS, slotLabel,
   SLOT_CITY, SLOT_DATE,
 } from '../data/bracket2026.js';
 
@@ -78,6 +78,21 @@ export function resolveBracket(knockoutMatches = [], standings = null) { // esli
       winner,
       loser,
     });
+  }
+
+  // Propagate competitors forward: a later round's slot is contested by the WINNERS
+  // of its feeders (the LOSERS, for the third-place match). The feed fills these
+  // into the actual fixtures inconsistently — some R16/QF carry real teams, others
+  // stay TBD — so we compute them, letting deeper rounds show "A or B" the moment
+  // both feeders are decided (not just when the feed happens to populate them). Only
+  // fills a side the feed left null; the feed's own team always wins. Feeders are
+  // always lower-numbered than their parent, so a single ascending pass suffices.
+  for (let no = 89; no <= 104; no += 1) {
+    const node = nodes.get(no);
+    const feeders = FEEDERS[no] ?? [];
+    const useLoser = LOSER_FEED.has(no);
+    if (!node.home && feeders[0] != null) { const f = nodes.get(feeders[0]); node.home = (useLoser ? f.loser : f.winner) ?? null; }
+    if (!node.away && feeders[1] != null) { const f = nodes.get(feeders[1]); node.away = (useLoser ? f.loser : f.winner) ?? null; }
   }
 
   return { nodes, columnOrder: COLUMN_ORDER, columns: COLUMNS };

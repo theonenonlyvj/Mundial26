@@ -43,4 +43,17 @@ describe('buildKnockout displays', () => {
     const { nodes } = buildKnockout(matches);
     expect(nodes.get(90).homeDisplay).toMatchObject({ kind: 'team', team: { id: 42 } });
   });
+
+  it('shows "A or B" in the QF once both R32 feeding an R16 are decided (feed left the R16 TBD)', () => {
+    // R32 slot 76 (Houston) won by id 1, slot 78 (Dallas, earlier of dallas pair) by
+    // id 4. Their R16 (slot 91) isn't in the feed yet — but QF slot 99 (fed by 91)
+    // should still read "1 or 4", not "Winner R16".
+    const matches = [
+      { id: 76, stage: 'LAST_32', status: 'FINISHED', utcDate: '2026-06-29T17:00:00Z', home: team(1, 'BRA'), away: team(2, 'JPN'), score: { winner: 'HOME_TEAM' }, city: { id: 'houston' } },
+      { id: 78, stage: 'LAST_32', status: 'FINISHED', utcDate: '2026-06-30T17:00:00Z', home: team(3, 'CIV'), away: team(4, 'NOR'), score: { winner: 'AWAY_TEAM' }, city: { id: 'dallas' } },
+    ];
+    const d = buildKnockout(matches).nodes.get(99).homeDisplay; // QF 99 home <- R16 91 <- R32 76/78
+    expect(d.kind).toBe('either');
+    expect([d.a.id, d.b.id].sort()).toEqual([1, 4]);
+  });
 });
