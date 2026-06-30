@@ -12,9 +12,9 @@ function shortSlot(slot) {
   return `Grp ${slot.group} · ${slot.kind === 'W' ? '1st' : '2nd'}`;
 }
 
-// Cap how many possible teams we'll show as a flag mosaic on a side: up to a SF
-// (8). The final (up to 16) falls back to a "Winner SF" label.
-const POOL_MAX = 8;
+// Every knockout round, all the way to the Final (a final side can draw from up to
+// 16 teams). 16 is the deepest the bracket goes, so this is effectively uncapped.
+const POOL_MAX = 16;
 
 // The recursive "who could occupy this side" tree:
 //   { teams: [team] }          a decided/known team
