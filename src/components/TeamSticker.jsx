@@ -1,5 +1,5 @@
 import './TeamSticker.css';
-import SplitMedallion from './SplitMedallion.jsx';
+import FlagMosaic from './FlagMosaic.jsx';
 
 const ADV_LABEL = { through: 'Through ✅', out: 'Out ❌' };
 
@@ -20,11 +20,13 @@ export default function TeamSticker({ team, align = 'left', advancement = null, 
       </span>
     );
   }
-  if (unresolved && display?.kind === 'either') {
+  // A side that could be 2–4 teams (e.g. an R16 "A or B", or a QF "POR/CRO or
+  // ESP/AUT"): a flag mosaic + the nested label.
+  if (unresolved && display?.kind === 'pool') {
     return (
       <span className={cls}>
-        <SplitMedallion a={display.a} b={display.b} size={34} />
-        <span className="team__info"><span className="team__name team__name--either">{display.a.name} <em>or</em> {display.b.name}</span></span>
+        <FlagMosaic teams={display.teams} weights={display.weights} size={34} />
+        <span className="team__info"><span className="team__name team__name--either">{display.label}</span></span>
       </span>
     );
   }
