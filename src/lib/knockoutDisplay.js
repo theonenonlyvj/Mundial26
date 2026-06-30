@@ -75,12 +75,26 @@ function teamWeights(p) {
   return new Map();
 }
 
-// One competitor: a single team → its full name; a sub-pool → its TLAs joined by "/".
-function compLabel(p) {
-  const teams = flattenTeams(p);
-  if (teams.length === 1) return teams[0].name;
-  return teams.map((t) => t.tla ?? t.name).join('/');
+const tlaOf = (p) => { const t = p.teams?.[0]; return t ? (t.tla ?? t.name) : '?'; };
+const isPair = (p) => !!(p.match && p.match[0].teams?.length === 1 && p.match[1].teams?.length === 1);
+
+// Label a NESTED competitor: a two-team tie → "A/B"; a deeper matchup → "X v Y"
+// (the two sides play each other); a lone team → its TLA.
+function innerLabel(p) {
+  if (p.teams) return p.teams.map((t) => t.tla ?? t.name).join('/');
+  if (p.match) {
+    if (isPair(p)) return `${tlaOf(p.match[0])}/${tlaOf(p.match[1])}`;
+    return `${innerLabel(p.match[0])} v ${innerLabel(p.match[1])}`;
+  }
+  return p.slot ?? 'TBD';
 }
+// A direct alternative of the outermost "or": a lone team shows its full name.
+function compLabel(p) {
+  if (p.teams && p.teams.length === 1) return p.teams[0].name;
+  return innerLabel(p);
+}
+// Top level: the slot's alternatives joined by "or" ("Paraguay or FRA/SWE",
+// "POR/CRO or ESP/AUT", "ARG/CPV v AUS/EGY or SUI/ALG v COL/GHA").
 function poolLabel(p) {
   if (p.match) return `${compLabel(p.match[0])} or ${compLabel(p.match[1])}`;
   return compLabel(p);

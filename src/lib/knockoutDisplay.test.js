@@ -87,6 +87,6 @@ describe('buildKnockout displays', () => {
     expect(w.PAR).toBeCloseTo(0.25); expect(w.CAN).toBeCloseTo(0.25); expect(w.MOR).toBeCloseTo(0.25);
     expect(w.FRA).toBeCloseTo(0.125); expect(w.SWE).toBeCloseTo(0.125);
     expect(d.weights.reduce((s, x) => s + x, 0)).toBeCloseTo(1);
-    expect(d.label).toBe('PAR/FRA/SWE or CAN/MOR');
+    expect(d.label).toBe('PAR v FRA/SWE or CAN/MOR'); // inner R16 tie reads "v", outermost "or"
   });
 });
