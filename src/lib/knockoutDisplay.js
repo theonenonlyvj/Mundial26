@@ -12,38 +12,75 @@ function shortSlot(slot) {
   return `Grp ${slot.group} · ${slot.kind === 'W' ? '1st' : '2nd'}`;
 }
 
-// What to show for one side of a knockout match:
-//  - { kind:'team', team }            a decided team
-//  - { kind:'slot', label }           a known seed ("Grp K · 1st", "3rd place")
-//  - { kind:'either', a, b }          the two teams from a known feeder ("A OR B")
-//  - { kind:'tbd' }                   genuinely unknown
-function sideDisplay(nodes, no, idx) {
+// Cap how many possible teams we'll show as a flag mosaic on a side. A QF side is
+// fed by an R16 (≤4 teams); deeper sides (a SF can have up to 8) fall back to a
+// "Winner QF" label here — the weighted mosaic for those is a later phase.
+const POOL_MAX = 4;
+
+// The recursive "who could occupy this side" tree:
+//   { teams: [team] }          a decided/known team
+//   { match: [left, right] }   undecided — the winner of a sub-match (each a subtree)
+//   { slot: label }            a seed / "Winner R16" / "Semi-final loser" (no concrete team yet)
+// Uses node.home/away, which resolveBracket already propagates forward — so a side
+// resolves to its competitors as soon as the matches that decide them are played,
+// regardless of whether the feed has populated the intermediate fixture.
+function possibilities(nodes, no, idx) {
   const node = nodes.get(no);
   const team = idx === 0 ? node.home : node.away;
-  if (team) return { kind: 'team', team };
-
-  if (node.round === 'LAST_32') {
-    return { kind: 'slot', label: shortSlot(R32_SLOTS[no][idx]) };
-  }
-  // The third-place match is contested by the two semi-final LOSERS.
+  if (team && team.id != null) return { teams: [team] };
+  if (node.round === 'LAST_32') return { slot: shortSlot(R32_SLOTS[no][idx]) };
   if (LOSER_FEED.has(no)) {
     const lf = (FEEDERS[no] ?? [])[idx];
     const fl = lf != null ? nodes.get(lf) : null;
-    if (fl?.loser) return { kind: 'team', team: fl.loser }; // semi decided → who dropped down
-    return { kind: 'slot', label: 'Semi-final loser' };
+    return fl?.loser ? { teams: [fl.loser] } : { slot: 'Semi-final loser' };
   }
   const feederNo = (FEEDERS[no] ?? [])[idx];
-  if (feederNo != null) {
-    const f = nodes.get(feederNo);
-    // NOTE: the API's own answer already won above (`if (team)`). This branch only
-    // runs while this match is still TBD in the feed — so once the feeder is
-    // DECIDED, show the team that actually advanced; otherwise the "A or B" split,
-    // else "Winner R32".
-    if (f.winner) return { kind: 'team', team: f.winner };
-    if (f.home && f.away) return { kind: 'either', a: f.home, b: f.away };
-    return { kind: 'slot', label: `Winner ${SHORT_ROUND[ROUND_OF[feederNo]]}` };
+  if (feederNo == null) return { slot: 'TBD' };
+  const f = nodes.get(feederNo);
+  if (f.winner) return { teams: [f.winner] };
+  return { match: [possibilities(nodes, feederNo, 0), possibilities(nodes, feederNo, 1)] };
+}
+
+function flattenTeams(p) {
+  if (p.teams) return p.teams;
+  if (p.match) return [...flattenTeams(p.match[0]), ...flattenTeams(p.match[1])];
+  return [];
+}
+
+// True only if every leaf of the possibility tree is a concrete team (no seeds /
+// unknowns) — i.e. we can render a clean flag mosaic + nested label.
+function hasOnlyTeams(p) {
+  if (p.teams) return p.teams.length > 0;
+  if (p.match) return hasOnlyTeams(p.match[0]) && hasOnlyTeams(p.match[1]);
+  return false;
+}
+
+// One competitor: a single team → its full name; a sub-pool → its TLAs joined by "/".
+function compLabel(p) {
+  const teams = flattenTeams(p);
+  if (teams.length === 1) return teams[0].name;
+  return teams.map((t) => t.tla ?? t.name).join('/');
+}
+function poolLabel(p) {
+  if (p.match) return `${compLabel(p.match[0])} or ${compLabel(p.match[1])}`;
+  return compLabel(p);
+}
+
+// What to show for one side of a knockout match:
+//  - { kind:'team', team }                 a decided team
+//  - { kind:'slot', label }                a seed / "Winner R16" / "Semi-final loser"
+//  - { kind:'pool', teams:[], label }      2–4 possible teams ("Paraguay or FRA/SWE")
+function sideDisplay(nodes, no, idx) {
+  const p = possibilities(nodes, no, idx);
+  if (p.slot) return { kind: 'slot', label: p.slot };
+  const teams = flattenTeams(p);
+  if (teams.length === 1) return { kind: 'team', team: teams[0] };
+  if (teams.length >= 2 && teams.length <= POOL_MAX && hasOnlyTeams(p)) {
+    return { kind: 'pool', teams, label: poolLabel(p) };
   }
-  return { kind: 'tbd' };
+  // too deep to enumerate cleanly yet (e.g. a SF side) — show "Winner <round>".
+  const feederNo = (FEEDERS[no] ?? [])[idx];
+  return { kind: 'slot', label: feederNo != null ? `Winner ${SHORT_ROUND[ROUND_OF[feederNo]]}` : 'TBD' };
 }
 
 // Resolve the bracket and attach a home/away Display to every node. `byMatchId`

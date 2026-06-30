@@ -19,13 +19,14 @@ describe('buildKnockout displays', () => {
     expect(nodes.get(79).awayDisplay.kind).toBe('slot');
   });
 
-  it('shows "either" for a Round-of-16 whose Round-of-32 tie is set', () => {
+  it('shows a 2-team pool for a Round-of-16 whose Round-of-32 tie is set', () => {
     // M73 = Los Angeles (Runner-up A vs Runner-up B, ids 2 and 6) — both known.
     const matches = [{ id: 73, stage: 'LAST_32', status: 'SCHEDULED', utcDate: '2026-06-28T19:00:00Z', home: team(2, 'A2'), away: team(6, 'B2'), score: {}, city: { id: 'los-angeles' } }];
     const { nodes } = buildKnockout(matches);
     // M90 feeds from M73 (home side)
-    expect(nodes.get(90).homeDisplay.kind).toBe('either');
-    expect([nodes.get(90).homeDisplay.a.id, nodes.get(90).homeDisplay.b.id].sort()).toEqual([2, 6]);
+    expect(nodes.get(90).homeDisplay.kind).toBe('pool');
+    expect(nodes.get(90).homeDisplay.teams.map((t) => t.id).sort()).toEqual([2, 6]);
+    expect(nodes.get(90).homeDisplay.label).toBe('A2 or B2');
   });
 
   it('shows the advancing team (not the split) once the feeding match is decided', () => {
@@ -53,7 +54,21 @@ describe('buildKnockout displays', () => {
       { id: 78, stage: 'LAST_32', status: 'FINISHED', utcDate: '2026-06-30T17:00:00Z', home: team(3, 'CIV'), away: team(4, 'NOR'), score: { winner: 'AWAY_TEAM' }, city: { id: 'dallas' } },
     ];
     const d = buildKnockout(matches).nodes.get(99).homeDisplay; // QF 99 home <- R16 91 <- R32 76/78
-    expect(d.kind).toBe('either');
-    expect([d.a.id, d.b.id].sort()).toEqual([1, 4]);
+    expect(d.kind).toBe('pool');
+    expect(d.teams.map((t) => t.id).sort()).toEqual([1, 4]);
+    expect(d.label).toBe('BRA or NOR');
+  });
+
+  it('builds a nested "A/B or C/D" 4-way pool for a QF fed by two undecided R16 ties', () => {
+    // R16 slot 94 = winner(R32 81) vs winner(R32 82); QF 98 away side feeds from 94.
+    // Both R32 are present-but-undecided -> the QF side is "POR/CRO or ESP/AUT".
+    const matches = [
+      { id: 81, stage: 'LAST_32', status: 'TIMED', utcDate: '2026-07-01T20:00:00Z', home: team(10, 'POR'), away: team(11, 'CRO'), score: {}, city: { id: 'bay-area' } },
+      { id: 82, stage: 'LAST_32', status: 'TIMED', utcDate: '2026-07-01T21:00:00Z', home: team(12, 'ESP'), away: team(13, 'AUT'), score: {}, city: { id: 'seattle' } },
+    ];
+    const d = buildKnockout(matches).nodes.get(98).awayDisplay; // QF 98 away <- R16 94 <- R32 81/82
+    expect(d.kind).toBe('pool');
+    expect(d.teams.map((t) => t.tla).sort()).toEqual(['AUT', 'CRO', 'ESP', 'POR']);
+    expect(d.label).toBe('POR/CRO or ESP/AUT');
   });
 });

@@ -1,0 +1,5 @@
+.flag-mosaic {
+  flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--gold), 0 0 0 4px var(--paper);
+}
