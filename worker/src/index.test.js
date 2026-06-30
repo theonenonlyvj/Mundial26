@@ -63,6 +63,28 @@ describe('runScheduled', () => {
     expect(JSON.parse(env.DATA.store.get('snapshot:v1'))).toEqual(schedule); // prior untouched
     expect(errSpy).toHaveBeenCalled(); // failure is surfaced for observability
   });
+  it('does NOT downgrade a decided knockout result back to "no winner" (NED-MAR regression)', async () => {
+    // Prior already has the shootout decided (AWAY won). The feed then wobbles
+    // back to winner:null with a tied/garbage fullTime — must NOT erase the winner.
+    const decidedPrior = {
+      matches: { matches: [{ id: 73, utcDate: KO, status: 'FINISHED', stage: 'LAST_32', home: { id: 1, name: 'A' }, away: { id: 2, name: 'B' }, score: { home: 1, away: 1, winner: 'AWAY_TEAM', shootout: true, penalties: { home: 2, away: 3 } } }] },
+      standings: { groups: [], bestThirdIds: [] },
+      scorers: { scorers: [] },
+    };
+    const wobble = async (url) => {
+      const p = url.replace('https://api.football-data.org/v4', '');
+      const bodies = {
+        '/competitions/WC/matches': { matches: [{ id: 73, utcDate: KO, status: 'FINISHED', stage: 'LAST_32', homeTeam: { id: 1, name: 'A', tla: 'A' }, awayTeam: { id: 2, name: 'B', tla: 'B' }, score: { winner: null, duration: 'PENALTY_SHOOTOUT', fullTime: { home: 4, away: 4 }, regularTime: { home: 1, away: 1 }, extraTime: { home: 0, away: 0 }, halfTime: {} } }] },
+        '/competitions/WC/standings': { standings: [] },
+        '/competitions/WC/scorers': { scorers: [] },
+      };
+      return { ok: true, status: 200, json: async () => bodies[p] };
+    };
+    const env = { DATA: kv(decidedPrior), FOOTBALL_DATA_API_KEY: 'k' };
+    await runScheduled({ env, nowMs: koMs + 30 * 60_000, fetchImpl: wobble }); // in window -> runs
+    const m = JSON.parse(env.DATA.store.get('snapshot:v1')).matches.matches.find((x) => x.id === 73);
+    expect(m.score.winner).toBe('AWAY_TEAM'); // preserved, NOT downgraded to null
+  });
 });
 
 const SNAP = {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { inGameWindow, buildSnapshot } from './snapshot.js';
+import { shouldRefresh, buildSnapshot } from './snapshot.js';
 
 // Minimal fake football-data v4 responses (raw upstream shapes).
 function fakeFetch(rawByPath) {
@@ -58,23 +58,28 @@ describe('buildSnapshot', () => {
 const KO = '2026-06-29T18:00:00Z';
 const koMs = Date.parse(KO);
 
-describe('inGameWindow', () => {
+describe('shouldRefresh', () => {
   it('is true within [kickoff-12min, kickoff+240min] for an unfinished match', () => {
-    expect(inGameWindow([{ utcDate: KO, status: 'TIMED' }], koMs - 10 * 60_000)).toBe(true); // imminent
-    expect(inGameWindow([{ utcDate: KO, status: 'IN_PLAY' }], koMs + 60 * 60_000)).toBe(true); // live
+    expect(shouldRefresh([{ utcDate: KO, status: 'TIMED' }], koMs - 10 * 60_000)).toBe(true); // imminent
+    expect(shouldRefresh([{ utcDate: KO, status: 'IN_PLAY' }], koMs + 60 * 60_000)).toBe(true); // live
   });
-  it('is false before the lead window and long after kickoff', () => {
-    expect(inGameWindow([{ utcDate: KO, status: 'TIMED' }], koMs - 30 * 60_000)).toBe(false);
-    expect(inGameWindow([{ utcDate: KO, status: 'TIMED' }], koMs + 300 * 60_000)).toBe(false);
+  it('is false before the lead window and long after a non-knockout match', () => {
+    expect(shouldRefresh([{ utcDate: KO, status: 'TIMED' }], koMs - 30 * 60_000)).toBe(false);
+    expect(shouldRefresh([{ utcDate: KO, status: 'FINISHED', stage: 'GROUP_STAGE' }], koMs + 300 * 60_000)).toBe(false);
   });
-  it('KEEPS refreshing a finished/awarded match still inside the time window (to catch late corrections)', () => {
-    expect(inGameWindow([{ utcDate: KO, status: 'FINISHED' }], koMs + 60 * 60_000)).toBe(true);
-    expect(inGameWindow([{ utcDate: KO, status: 'AWARDED' }], koMs + 60 * 60_000)).toBe(true);
+  it('keeps refreshing a finished match still inside the time window (catch late corrections)', () => {
+    expect(shouldRefresh([{ utcDate: KO, status: 'FINISHED' }], koMs + 60 * 60_000)).toBe(true);
+    expect(shouldRefresh([{ utcDate: KO, status: 'AWARDED' }], koMs + 60 * 60_000)).toBe(true);
   });
-  it('stops once a finished match is past the window', () => {
-    expect(inGameWindow([{ utcDate: KO, status: 'FINISHED' }], koMs + 300 * 60_000)).toBe(false);
+  it('CHASES a finished knockout with no decisive winner past the live window (up to 24h)', () => {
+    const past = koMs + 360 * 60_000; // 6h after KO, past the 240-min window
+    const undecided = { utcDate: KO, status: 'FINISHED', stage: 'LAST_32', score: { winner: null } };
+    const decided = { utcDate: KO, status: 'FINISHED', stage: 'LAST_32', score: { winner: 'AWAY_TEAM' } };
+    expect(shouldRefresh([undecided], past)).toBe(true);          // unsettled -> keep chasing
+    expect(shouldRefresh([decided], past)).toBe(false);           // settled -> stop
+    expect(shouldRefresh([undecided], koMs + 25 * 60 * 60_000)).toBe(false); // give up after 24h
   });
   it('is false for an empty list', () => {
-    expect(inGameWindow([], koMs)).toBe(false);
+    expect(shouldRefresh([], koMs)).toBe(false);
   });
 });
