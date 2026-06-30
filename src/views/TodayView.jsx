@@ -5,6 +5,7 @@ import { advancementForMatch } from '../lib/advancement.js';
 import { useAdvByTeam } from '../hooks/useAdvByTeam.js';
 import { useKnockoutDisplay } from '../hooks/useKnockoutDisplay.js';
 import MatchSticker from '../components/MatchSticker.jsx';
+import Emoji from '../components/Emoji.jsx';
 import WhatToWatch from '../components/WhatToWatch.jsx';
 import FreshnessNote from '../components/FreshnessNote.jsx';
 
@@ -45,11 +46,11 @@ export default function TodayView({
     <section aria-label="Today">
       <WhatToWatch matches={matches} now={now} advByTeam={advByTeam} koDisplay={koDisplay} />
       <FreshnessNote at={dataAsOf} />
-      <p style={{ fontSize: '0.8em', color: 'var(--muted, #888)', marginTop: 4 }}>🕐 Kickoff times shown in your local time zone.</p>
+      <p style={{ fontSize: '0.8em', color: 'var(--muted, #888)', marginTop: 4 }}><Emoji code="1F550" label="clock" /> Kickoff times shown in your local time zone.</p>
       {today.length ? (
         <Strip title="On Today" matches={today} now={now} advByTeam={advByTeam} koDisplay={koDisplay} />
       ) : (
-        <p style={{ fontWeight: 700 }}>No matches today — here's what's coming up next. ⤵️</p>
+        <p style={{ fontWeight: 700 }}>No matches today — here's what's coming up next. <Emoji code="2935" label="down arrow" /></p>
       )}
       <Strip title="Coming Up" matches={comingUp} now={now} advByTeam={advByTeam} koDisplay={koDisplay} />
       <Strip title="Recent Results" matches={recent} now={now} advByTeam={advByTeam} koDisplay={koDisplay} />

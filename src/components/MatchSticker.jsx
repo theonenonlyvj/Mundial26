@@ -1,5 +1,6 @@
 import StickerCard from './StickerCard.jsx';
 import TeamSticker from './TeamSticker.jsx';
+import Emoji from './Emoji.jsx';
 import { formatKickoff } from '../lib/kickoff.js';
 import { stageLabel } from '../lib/stage.js';
 import { livePhase } from '../lib/livePhase.js';
@@ -45,10 +46,10 @@ export default function MatchSticker({ match, now = new Date().toISOString(), fe
         </div>
         <TeamSticker team={match.away} align="right" featured={featured} advancement={advancement?.away ?? null} display={knockout?.away ?? null} />
       </div>
-      {pens && <div className="match__pens" style={{ position: 'relative', zIndex: 1 }}>🥅 {pens}</div>}
+      {pens && <div className="match__pens" style={{ position: 'relative', zIndex: 1 }}><Emoji code="1F945" label="goal net" /> {pens}</div>}
       {match.city && <div className="match__city" style={{ position: 'relative', zIndex: 1 }}>{match.city.city}</div>}
       {match.channels && (
-        <div className="match__channels" style={{ position: 'relative', zIndex: 1 }}>📺 {match.channels.en} · {match.channels.es}</div>
+        <div className="match__channels" style={{ position: 'relative', zIndex: 1 }}><Emoji code="1F4FA" label="TV" /> {match.channels.en} · {match.channels.es}</div>
       )}
     </StickerCard>
   );
