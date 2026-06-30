@@ -49,17 +49,22 @@ function signature(snap) {
   ]);
 }
 
-// Never downgrade a DECIDED knockout result back to "no winner". The free tier
-// flickers winner->null (and tied penalties) for minutes-to-hours around a
-// shootout; once we've recorded a decisive winner, a later wobbly read must not
-// erase it. A genuine correction to a *different* decisive winner is still taken.
+// Block ONLY the specific free-tier wobble: a FINISHED knockout that HAD a
+// decisive winner suddenly reports winner:null while the score is UNCHANGED.
+// Anything that represents a real change is taken as-is:
+//   - a different score (a disallowed/added goal — e.g. a VAR/offside call-back),
+//   - a different decisive winner (a genuine correction),
+//   - the match reverting to in-play (status no longer FINISHED).
+// So a called-back goal always wins; only the pure "lost the winner flag with the
+// same score" garbage is ignored.
 function preserveDecided(prior, snap) {
   const priorMatches = prior?.matches?.matches;
   if (!priorMatches || !snap?.matches?.matches) return snap;
   const byId = new Map(priorMatches.map((m) => [m.id, m]));
   for (const m of snap.matches.matches) {
     const p = byId.get(m.id);
-    if (isDecisive(p) && p.status === 'FINISHED' && m.status === 'FINISHED' && !isDecisive(m)) {
+    const sameScore = p?.score?.home === m?.score?.home && p?.score?.away === m?.score?.away;
+    if (isDecisive(p) && p.status === 'FINISHED' && m.status === 'FINISHED' && !isDecisive(m) && sameScore) {
       m.score = p.score;
     }
   }
