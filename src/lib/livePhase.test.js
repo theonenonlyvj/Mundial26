@@ -20,4 +20,11 @@ describe('livePhase', () => {
     expect(livePhase({ status: 'IN_PLAY', score: { halfTime: { home: 0, away: 0 } } })).toBe('2nd half');
     expect(livePhase({ status: 'IN_PLAY', score: { halfTime: { home: 1, away: 0 } } })).toBe('2nd half');
   });
+
+  it('reads extra time and penalties from score.duration (taking precedence over 2nd half)', () => {
+    // extra time still carries a halftime score on record, so duration must win
+    expect(livePhase({ status: 'IN_PLAY', score: { duration: 'EXTRA_TIME', halfTime: { home: 1, away: 1 } } })).toBe('Extra time');
+    expect(livePhase({ status: 'IN_PLAY', score: { duration: 'PENALTY_SHOOTOUT', halfTime: { home: 1, away: 1 } } })).toBe('Penalties');
+    expect(livePhase({ status: 'PAUSED', score: { duration: 'EXTRA_TIME' } })).toBe('Extra-time break');
+  });
 });
