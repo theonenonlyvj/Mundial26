@@ -85,6 +85,28 @@ describe('runScheduled', () => {
     const m = JSON.parse(env.DATA.store.get('snapshot:v1')).matches.matches.find((x) => x.id === 73);
     expect(m.score.winner).toBe('AWAY_TEAM'); // preserved, NOT downgraded to null
   });
+  it('TAKES a real score change even when the winner flag drops (a called-back goal)', async () => {
+    // Prior decided 1-1 (AWAY won). The feed now reports a DIFFERENT score (a goal
+    // was disallowed) — that is a real change and must overwrite, not be preserved.
+    const decidedPrior = {
+      matches: { matches: [{ id: 73, utcDate: KO, status: 'FINISHED', stage: 'LAST_32', home: { id: 1, name: 'A' }, away: { id: 2, name: 'B' }, score: { home: 1, away: 1, winner: 'AWAY_TEAM' } }] },
+      standings: { groups: [], bestThirdIds: [] },
+      scorers: { scorers: [] },
+    };
+    const changed = async (url) => {
+      const p = url.replace('https://api.football-data.org/v4', '');
+      const bodies = {
+        '/competitions/WC/matches': { matches: [{ id: 73, utcDate: KO, status: 'FINISHED', stage: 'LAST_32', homeTeam: { id: 1, name: 'A', tla: 'A' }, awayTeam: { id: 2, name: 'B', tla: 'B' }, score: { winner: null, duration: 'REGULAR', fullTime: { home: 1, away: 0 }, halfTime: {} } }] },
+        '/competitions/WC/standings': { standings: [] },
+        '/competitions/WC/scorers': { scorers: [] },
+      };
+      return { ok: true, status: 200, json: async () => bodies[p] };
+    };
+    const env = { DATA: kv(decidedPrior), FOOTBALL_DATA_API_KEY: 'k' };
+    await runScheduled({ env, nowMs: koMs + 30 * 60_000, fetchImpl: changed });
+    const m = JSON.parse(env.DATA.store.get('snapshot:v1')).matches.matches.find((x) => x.id === 73);
+    expect([m.score.home, m.score.away]).toEqual([1, 0]); // the corrected score, NOT the preserved 1-1
+  });
 });
 
 const SNAP = {
