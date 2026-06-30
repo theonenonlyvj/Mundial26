@@ -10,6 +10,32 @@ export function normalizeTeam(t) {
 }
 
 export function normalizeMatch(m) {
+  const s = m.score ?? {};
+  const ft = s.fullTime ?? {};
+  const reg = s.regularTime ?? {};
+  const et = s.extraTime ?? {};
+  const shootout = s.duration === 'PENALTY_SHOOTOUT';
+
+  // For a penalty shootout, football-data's `fullTime` is the AGGREGATE (the
+  // score after 120' PLUS the shootout) and its `winner`/`penalties` fields are
+  // unreliable on the free tier (we've seen winner:null and a tied penalties
+  // object for a decided tie). So show the score after 120' and derive the
+  // shootout + winner from the aggregate, where the winner is always correct.
+  let home; let away; let penalties = null;
+  if (shootout) {
+    home = (reg.home ?? 0) + (et.home ?? 0);
+    away = (reg.away ?? 0) + (et.away ?? 0);
+    penalties = { home: (ft.home ?? home) - home, away: (ft.away ?? away) - away };
+  } else {
+    home = ft.home ?? null;
+    away = ft.away ?? null;
+  }
+
+  let winner = s.winner ?? null;
+  if (!winner && shootout && (ft.home ?? 0) !== (ft.away ?? 0)) {
+    winner = (ft.home ?? 0) > (ft.away ?? 0) ? 'HOME_TEAM' : 'AWAY_TEAM';
+  }
+
   return {
     id: m.id,
     utcDate: m.utcDate,
@@ -21,12 +47,14 @@ export function normalizeMatch(m) {
     home: normalizeTeam(m.homeTeam),
     away: normalizeTeam(m.awayTeam),
     score: {
-      home: m.score?.fullTime?.home ?? null,
-      away: m.score?.fullTime?.away ?? null,
-      winner: m.score?.winner ?? null,
+      home,
+      away,
+      winner,
+      shootout,
+      penalties,
       halfTime: {
-        home: m.score?.halfTime?.home ?? null,
-        away: m.score?.halfTime?.away ?? null,
+        home: s.halfTime?.home ?? null,
+        away: s.halfTime?.away ?? null,
       },
     },
   };

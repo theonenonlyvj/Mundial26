@@ -67,9 +67,12 @@ describe('inGameWindow', () => {
     expect(inGameWindow([{ utcDate: KO, status: 'TIMED' }], koMs - 30 * 60_000)).toBe(false);
     expect(inGameWindow([{ utcDate: KO, status: 'TIMED' }], koMs + 300 * 60_000)).toBe(false);
   });
-  it('is false for a finished or awarded match even inside the window', () => {
-    expect(inGameWindow([{ utcDate: KO, status: 'FINISHED' }], koMs + 60 * 60_000)).toBe(false);
-    expect(inGameWindow([{ utcDate: KO, status: 'AWARDED' }], koMs + 60 * 60_000)).toBe(false);
+  it('KEEPS refreshing a finished/awarded match still inside the time window (to catch late corrections)', () => {
+    expect(inGameWindow([{ utcDate: KO, status: 'FINISHED' }], koMs + 60 * 60_000)).toBe(true);
+    expect(inGameWindow([{ utcDate: KO, status: 'AWARDED' }], koMs + 60 * 60_000)).toBe(true);
+  });
+  it('stops once a finished match is past the window', () => {
+    expect(inGameWindow([{ utcDate: KO, status: 'FINISHED' }], koMs + 300 * 60_000)).toBe(false);
   });
   it('is false for an empty list', () => {
     expect(inGameWindow([], koMs)).toBe(false);
