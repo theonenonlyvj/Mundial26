@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import Emoji from '../components/Emoji.jsx';
 import { getMatches } from '../api/client.js';
 import { useLiveData } from '../hooks/useLiveData.js';
 import { groupMatchesByDay } from '../lib/groupByDate.js';
@@ -41,7 +42,7 @@ export default function TimelineView({
   return (
     <section aria-label="Timeline">
       <FreshnessNote at={dataAsOf} />
-      <p className="timeline__hint">Scroll ↕ — earlier days are up, upcoming days are down.</p>
+      <p className="timeline__hint">Scroll <Emoji code="2195" label="up-down" /> — earlier days are up, upcoming days are down.</p>
       {days.map((day) => {
         const isToday = day.dayKey === todayKey;
         const isPast = day.dayKey < todayKey;

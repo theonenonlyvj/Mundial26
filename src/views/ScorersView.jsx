@@ -1,4 +1,5 @@
 import { getScorers } from '../api/client.js';
+import Emoji from '../components/Emoji.jsx';
 import { useLiveData } from '../hooks/useLiveData.js';
 import { rankScorers } from '../lib/leaderboard.js';
 import FreshnessNote from '../components/FreshnessNote.jsx';
@@ -13,7 +14,7 @@ export default function ScorersView() {
 
   return (
     <section aria-label="Scorers" className="scorers">
-      <div className="scorers__eyebrow">⚽ Golden Boot</div>
+      <div className="scorers__eyebrow"><Emoji code="26BD" label="ball" /> Golden Boot</div>
       <h2 className="scorers__title">Top Scorers</h2>
       <p className="scorers__sub">
         The race for most goals at the tournament. Whoever finishes on top wins the
@@ -22,7 +23,7 @@ export default function ScorersView() {
       <FreshnessNote at={dataAsOf} />
 
       {scorers.length === 0 ? (
-        <p className="scorers__empty">No goals yet — check back once the matches kick off. ⚽</p>
+        <p className="scorers__empty">No goals yet — check back once the matches kick off. <Emoji code="26BD" label="ball" /></p>
       ) : (
         <ol className="scorers__list">
           {scorers.map((s, i) => (

@@ -1,4 +1,5 @@
 import { pickMatchToWatch } from '../lib/watch.js';
+import Emoji from './Emoji.jsx';
 import { advancementForMatch } from '../lib/advancement.js';
 import MatchSticker from './MatchSticker.jsx';
 
@@ -17,7 +18,7 @@ export default function WhatToWatch({ matches, now = new Date().toISOString(), a
         letterSpacing: '0.08em',
         marginBottom: 8,
       }}>
-        ⭐ What to watch — {pick.reason}
+        <Emoji code="2B50" label="star" /> What to watch — {pick.reason}
       </div>
       <MatchSticker match={pick.match} now={now} featured advancement={advancement} knockout={koDisplay?.get(pick.match.id) ?? null} />
     </div>
