@@ -56,6 +56,15 @@ describe('MatchSticker', () => {
     expect(screen.queryByText('Round of 16')).not.toBeInTheDocument();
   });
 
+  it('spells out a penalty-shootout result (knockout decided on pens)', () => {
+    render(<MatchSticker match={{
+      home: { name: 'Germany', tla: 'GER' }, away: { name: 'Paraguay', tla: 'PAR' },
+      status: 'FINISHED',
+      score: { home: 1, away: 1, winner: 'AWAY_TEAM', shootout: true, penalties: { home: 4, away: 5 } },
+    }} />);
+    expect(screen.getByText(/Paraguay win 5–4 on penalties/)).toBeInTheDocument();
+  });
+
   it('shows the live phase (halftime / 2nd half) on a live match', () => {
     const { rerender } = render(<MatchSticker match={{ ...base, status: 'PAUSED', score: { home: 1, away: 0, halfTime: { home: 1, away: 0 } } }} />);
     expect(screen.getByText(/halftime/i)).toBeInTheDocument();

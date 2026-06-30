@@ -8,11 +8,22 @@ import './MatchSticker.css';
 const LIVE = new Set(['IN_PLAY', 'PAUSED']);
 const PLAYED = new Set(['IN_PLAY', 'PAUSED', 'FINISHED']);
 
+// A knockout decided on penalties shows "1-1" — spell out who actually advanced.
+function penaltyLine(match) {
+  const p = match.score?.penalties;
+  if (!p) return null;
+  const w = match.score.winner;
+  if (w === 'HOME_TEAM') return `${match.home.name} win ${p.home}–${p.away} on penalties`;
+  if (w === 'AWAY_TEAM') return `${match.away.name} win ${p.away}–${p.home} on penalties`;
+  return `Decided on penalties (${p.home}–${p.away})`;
+}
+
 export default function MatchSticker({ match, now = new Date().toISOString(), featured = false, advancement = null, showStage = true, knockout = null }) {
   const isLive = LIVE.has(match.status);
   const showScore = PLAYED.has(match.status);
   const stage = showStage ? stageLabel(match.stage, match.group) : null;
   const phase = isLive ? livePhase(match) : null;
+  const pens = match.score?.shootout ? penaltyLine(match) : null;
   const rootClass = ['match', featured && 'match--featured'].filter(Boolean).join(' ');
   return (
     <StickerCard foil={isLive || featured} className={featured ? 'match--featured-card' : ''}>
@@ -34,6 +45,7 @@ export default function MatchSticker({ match, now = new Date().toISOString(), fe
         </div>
         <TeamSticker team={match.away} align="right" featured={featured} advancement={advancement?.away ?? null} display={knockout?.away ?? null} />
       </div>
+      {pens && <div className="match__pens" style={{ position: 'relative', zIndex: 1 }}>🥅 {pens}</div>}
       {match.city && <div className="match__city" style={{ position: 'relative', zIndex: 1 }}>{match.city.city}</div>}
       {match.channels && (
         <div className="match__channels" style={{ position: 'relative', zIndex: 1 }}>📺 {match.channels.en} · {match.channels.es}</div>
