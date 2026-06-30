@@ -112,7 +112,11 @@ function sideDisplay(nodes, no, idx) {
   if (teams.length >= 2 && teams.length <= POOL_MAX && hasOnlyTeams(p)) {
     const wmap = teamWeights(p);
     const weights = teams.map((t) => wmap.get(t.id) ?? 0);
-    return { kind: 'pool', teams, label: poolLabel(p), weights };
+    // Past 8 possible teams (deep rounds → the Final) the nested label gets
+    // unwieldy — keep the weighted mosaic, but use the simple "Winner <round>" text.
+    const feederNo = (FEEDERS[no] ?? [])[idx];
+    const label = teams.length > 8 ? `Winner ${SHORT_ROUND[ROUND_OF[feederNo]]}` : poolLabel(p);
+    return { kind: 'pool', teams, label, weights };
   }
   // too deep to enumerate cleanly yet (e.g. a SF side) — show "Winner <round>".
   const feederNo = (FEEDERS[no] ?? [])[idx];
