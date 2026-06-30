@@ -5,7 +5,11 @@ const ADV_LABEL = { through: 'Through ✅', out: 'Out ❌' };
 
 export default function TeamSticker({ team, align = 'left', advancement = null, display = null }) {
   const cls = `team ${align === 'right' ? 'team--right' : ''}`.trim();
-  const unresolved = !team || team.id == null;
+  // Prefer the match's own team (the API's authoritative answer once it fills the
+  // slot); while it's still TBD in the feed, fall back to the advancer we resolved
+  // ourselves (winner/loser of a decided feeder, passed as a kind:'team' display).
+  const resolvedTeam = team && team.id != null ? team : (display?.kind === 'team' ? display.team : team);
+  const unresolved = !resolvedTeam || resolvedTeam.id == null;
 
   // For an undecided knockout side, show its seed instead of bare "TBD".
   if (unresolved && display?.kind === 'slot') {
@@ -28,10 +32,10 @@ export default function TeamSticker({ team, align = 'left', advancement = null, 
   return (
     <span className={cls}>
       <span className="team__badge">
-        {team?.crest ? <img src={team.crest} alt="" /> : (team?.tla ?? '??')}
+        {resolvedTeam?.crest ? <img src={resolvedTeam.crest} alt="" /> : (resolvedTeam?.tla ?? '??')}
       </span>
       <span className="team__info">
-        <span className="team__name">{team?.name ?? 'TBD'}</span>
+        <span className="team__name">{resolvedTeam?.name ?? 'TBD'}</span>
         {advancement && ADV_LABEL[advancement] && (
           <span className={`team__adv team__adv--${advancement}`}>{ADV_LABEL[advancement]}</span>
         )}

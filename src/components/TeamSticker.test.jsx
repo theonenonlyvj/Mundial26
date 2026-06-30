@@ -19,4 +19,24 @@ describe('TeamSticker', () => {
     render(<TeamSticker team={{ name: 'Wales', tla: 'WAL', crest: null }} />);
     expect(screen.queryByText(/Through|Out/)).not.toBeInTheDocument();
   });
+
+  it('renders our resolved advancer (not "TBD") when the match side is still TBD in the feed', () => {
+    // The bug we shipped + reverted: a kind:'team' display on an unresolved side
+    // fell through to "TBD". It must render the resolved team instead.
+    render(<TeamSticker
+      team={{ id: null, name: 'TBD', tla: null, crest: null }}
+      display={{ kind: 'team', team: { name: 'Paraguay', tla: 'PAR', crest: null } }}
+    />);
+    expect(screen.getByText('Paraguay')).toBeInTheDocument();
+    expect(screen.queryByText('TBD')).not.toBeInTheDocument();
+  });
+
+  it("SAFEGUARD: the match's own team wins over a computed display (API answer wins)", () => {
+    render(<TeamSticker
+      team={{ id: 7, name: 'Brazil', tla: 'BRA', crest: null }}
+      display={{ kind: 'team', team: { name: 'Paraguay', tla: 'PAR', crest: null } }}
+    />);
+    expect(screen.getByText('Brazil')).toBeInTheDocument();
+    expect(screen.queryByText('Paraguay')).not.toBeInTheDocument();
+  });
 });
