@@ -12,10 +12,9 @@ function shortSlot(slot) {
   return `Grp ${slot.group} · ${slot.kind === 'W' ? '1st' : '2nd'}`;
 }
 
-// Cap how many possible teams we'll show as a flag mosaic on a side. A QF side is
-// fed by an R16 (≤4 teams); deeper sides (a SF can have up to 8) fall back to a
-// "Winner QF" label here — the weighted mosaic for those is a later phase.
-const POOL_MAX = 4;
+// Cap how many possible teams we'll show as a flag mosaic on a side: up to a SF
+// (8). The final (up to 16) falls back to a "Winner SF" label.
+const POOL_MAX = 8;
 
 // The recursive "who could occupy this side" tree:
 //   { teams: [team] }          a decided/known team
@@ -55,6 +54,27 @@ function hasOnlyTeams(p) {
   return false;
 }
 
+// Probability each possible team OCCUPIES this side, under 50/50 per still-unplayed
+// match (and 100% for matches already won — those collapse to a single team). A
+// match mixes its two competitors evenly, so depth halves a team's share each round:
+// e.g. {PAR:¼, FRA:⅛, SWE:⅛, CAN:¼, MOR:¼}. Returns Map team.id -> weight (sums to 1).
+function teamWeights(p) {
+  if (p.teams) {
+    const w = 1 / p.teams.length;
+    return new Map(p.teams.map((t) => [t.id, w]));
+  }
+  if (p.match) {
+    const out = new Map();
+    for (const half of p.match) {
+      for (const [id, weight] of teamWeights(half)) {
+        out.set(id, (out.get(id) ?? 0) + weight / 2);
+      }
+    }
+    return out;
+  }
+  return new Map();
+}
+
 // One competitor: a single team → its full name; a sub-pool → its TLAs joined by "/".
 function compLabel(p) {
   const teams = flattenTeams(p);
@@ -76,7 +96,9 @@ function sideDisplay(nodes, no, idx) {
   const teams = flattenTeams(p);
   if (teams.length === 1) return { kind: 'team', team: teams[0] };
   if (teams.length >= 2 && teams.length <= POOL_MAX && hasOnlyTeams(p)) {
-    return { kind: 'pool', teams, label: poolLabel(p) };
+    const wmap = teamWeights(p);
+    const weights = teams.map((t) => wmap.get(t.id) ?? 0);
+    return { kind: 'pool', teams, label: poolLabel(p), weights };
   }
   // too deep to enumerate cleanly yet (e.g. a SF side) — show "Winner <round>".
   const feederNo = (FEEDERS[no] ?? [])[idx];

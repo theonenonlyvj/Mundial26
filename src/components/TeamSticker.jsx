@@ -25,7 +25,7 @@ export default function TeamSticker({ team, align = 'left', advancement = null, 
   if (unresolved && display?.kind === 'pool') {
     return (
       <span className={cls}>
-        <FlagMosaic teams={display.teams} weights={display.weights} size={34} />
+        <FlagMosaic teams={display.teams} weights={display.weights} size={display.teams.length > 4 ? 42 : 34} />
         <span className="team__info"><span className="team__name team__name--either">{display.label}</span></span>
       </span>
     );
