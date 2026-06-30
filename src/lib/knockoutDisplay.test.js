@@ -27,4 +27,11 @@ describe('buildKnockout displays', () => {
     expect(nodes.get(90).homeDisplay.kind).toBe('either');
     expect([nodes.get(90).homeDisplay.a.id, nodes.get(90).homeDisplay.b.id].sort()).toEqual([2, 6]);
   });
+
+  it('shows the advancing team (not the split) once the feeding match is decided', () => {
+    // M73 finished, home team (id 2) won — M90 should now show that team, not "2 or 6".
+    const matches = [{ id: 73, stage: 'LAST_32', status: 'FINISHED', utcDate: '2026-06-28T19:00:00Z', home: team(2, 'A2'), away: team(6, 'B2'), score: { winner: 'HOME_TEAM' }, city: { id: 'los-angeles' } }];
+    const { nodes } = buildKnockout(matches);
+    expect(nodes.get(90).homeDisplay).toMatchObject({ kind: 'team', team: { id: 2 } });
+  });
 });
