@@ -6,6 +6,7 @@ import { useAdvByTeam } from '../hooks/useAdvByTeam.js';
 import { useKnockoutDisplay } from '../hooks/useKnockoutDisplay.js';
 import MatchSticker from '../components/MatchSticker.jsx';
 import FreshnessNote from '../components/FreshnessNote.jsx';
+import Emoji from '../components/Emoji.jsx';
 import './MapView.css';
 
 const REGIONS = [
@@ -120,7 +121,7 @@ export default function MapView() {
             </div>
           </>
         ) : (
-          <p className="cities__prompt">Pick a city to see its matches. 📍</p>
+          <p className="cities__prompt">Pick a city to see its matches. <Emoji code="1F4CD" label="pin" /></p>
         )}
       </div>
       </div>
