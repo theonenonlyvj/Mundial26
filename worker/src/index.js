@@ -1,4 +1,4 @@
-import { buildSnapshot, inGameWindow } from './snapshot.js';
+import { buildSnapshot, shouldRefresh, isDecisive } from './snapshot.js';
 
 const CORS = {
   'access-control-allow-origin': '*',
@@ -49,12 +49,30 @@ function signature(snap) {
   ]);
 }
 
-// Cron body: refresh ONLY while a match is live/imminent (or to bootstrap an
-// empty KV). Keeps the prior snapshot on any upstream failure.
+// Never downgrade a DECIDED knockout result back to "no winner". The free tier
+// flickers winner->null (and tied penalties) for minutes-to-hours around a
+// shootout; once we've recorded a decisive winner, a later wobbly read must not
+// erase it. A genuine correction to a *different* decisive winner is still taken.
+function preserveDecided(prior, snap) {
+  const priorMatches = prior?.matches?.matches;
+  if (!priorMatches || !snap?.matches?.matches) return snap;
+  const byId = new Map(priorMatches.map((m) => [m.id, m]));
+  for (const m of snap.matches.matches) {
+    const p = byId.get(m.id);
+    if (isDecisive(p) && p.status === 'FINISHED' && m.status === 'FINISHED' && !isDecisive(m)) {
+      m.score = p.score;
+    }
+  }
+  return snap;
+}
+
+// Cron body: refresh while a match is live/imminent OR a knockout result is still
+// unsettled (or to bootstrap an empty KV). Keeps the prior snapshot on any
+// upstream failure, and never downgrades a decided result.
 export async function runScheduled({ env, nowMs, fetchImpl = fetch }) {
   const prior = await readSnapshot(env);
   const priorMatches = prior?.matches?.matches ?? [];
-  if (priorMatches.length && !inGameWindow(priorMatches, nowMs)) return { skipped: true };
+  if (priorMatches.length && !shouldRefresh(priorMatches, nowMs)) return { skipped: true };
 
   let snap;
   try {
@@ -66,6 +84,7 @@ export async function runScheduled({ env, nowMs, fetchImpl = fetch }) {
     return { skipped: true, error: true };
   }
 
+  snap = preserveDecided(prior, snap);
   if (prior && signature(prior) === signature(snap)) return { unchanged: true };
   await env.DATA.put(KEY, JSON.stringify({ at: nowMs, ...snap }));
   console.log('mundial26 cron: snapshot updated at', nowMs);

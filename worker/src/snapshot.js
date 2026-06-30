@@ -7,18 +7,26 @@ import { channelsForMatch } from './lib/matchChannels.js';
 
 const LEAD_MIN = 12;
 const CAP_MIN = 240;
+const SETTLE_MAX_MIN = 24 * 60; // chase an unsettled knockout result up to 24h after KO
 
-// A match keeps the cron refreshing from 12 min before kickoff to 240 min after.
-// Purely TIME-based (no status check): we deliberately keep fetching even after a
-// match shows FINISHED, because the free tier serves transient/wrong results
-// around full time — especially penalty shootouts — and corrects them minutes
-// later. Stopping at the first FINISHED reading froze a wrong result on the live
-// site (GER-PAR, 2026-06-29). 240 min covers 90'+ET+penalties plus a late
-// correction; outside any window the cron still no-ops.
-export function inGameWindow(matches, nowMs) {
+export function isDecisive(match) {
+  return match?.score?.winner === 'HOME_TEAM' || match?.score?.winner === 'AWAY_TEAM';
+}
+
+// Decide whether the cron should fetch this tick. Two reasons:
+//  1. a match is in its live window [KO-12min, KO+240min], OR
+//  2. a KNOCKOUT match is FINISHED but football-data still hasn't given a
+//     decisive winner — its free-tier shootout data can wobble for HOURS after
+//     full time (GER-PAR + NED-MAR, 2026-06-29/30 froze on a transient "no
+//     winner" reading). Keep chasing it until it settles, up to 24h after KO.
+// Outside both, the cron no-ops.
+export function shouldRefresh(matches, nowMs) {
   return (matches ?? []).some((m) => {
     const ko = Date.parse(m.utcDate);
-    return nowMs >= ko - LEAD_MIN * 60_000 && nowMs <= ko + CAP_MIN * 60_000;
+    if (nowMs >= ko - LEAD_MIN * 60_000 && nowMs <= ko + CAP_MIN * 60_000) return true;
+    const knockout = m.stage && m.stage !== 'GROUP_STAGE';
+    if (knockout && m.status === 'FINISHED' && !isDecisive(m) && nowMs <= ko + SETTLE_MAX_MIN * 60_000) return true;
+    return false;
   });
 }
 
