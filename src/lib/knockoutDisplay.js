@@ -27,11 +27,19 @@ function sideDisplay(nodes, no, idx) {
   }
   // The third-place match is contested by the two semi-final LOSERS.
   if (LOSER_FEED.has(no)) {
+    const lf = (FEEDERS[no] ?? [])[idx];
+    const fl = lf != null ? nodes.get(lf) : null;
+    if (fl?.loser) return { kind: 'team', team: fl.loser }; // semi decided → who dropped down
     return { kind: 'slot', label: 'Semi-final loser' };
   }
   const feederNo = (FEEDERS[no] ?? [])[idx];
   if (feederNo != null) {
     const f = nodes.get(feederNo);
+    // NOTE: the API's own answer already won above (`if (team)`). This branch only
+    // runs while this match is still TBD in the feed — so once the feeder is
+    // DECIDED, show the team that actually advanced; otherwise the "A or B" split,
+    // else "Winner R32".
+    if (f.winner) return { kind: 'team', team: f.winner };
     if (f.home && f.away) return { kind: 'either', a: f.home, b: f.away };
     return { kind: 'slot', label: `Winner ${SHORT_ROUND[ROUND_OF[feederNo]]}` };
   }
