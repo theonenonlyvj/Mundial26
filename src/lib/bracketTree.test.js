@@ -50,6 +50,31 @@ describe('resolveBracket (schedule-anchored)', () => {
     expect(m83.awayLabel).toMatch(/Runner-up Group L/);
   });
 
+  it('does NOT propagate a winner from a LIVE match (the feed\'s provisional winner is not a result)', () => {
+    // Slot 79 (Mexico City) feeds R16 slot 92. The feed sets winner=HOME_TEAM on a
+    // live 2-0 game; the bracket must NOT advance the leader before full time.
+    const matches = [{
+      id: 79, stage: 'LAST_32', status: 'IN_PLAY', utcDate: '2026-06-30T22:00:00Z',
+      home: team(1, 'A1'), away: team(9, 'X'),
+      score: { home: 2, away: 0, winner: 'HOME_TEAM' }, city: { id: 'mexico-city' },
+    }];
+    const { nodes } = resolveBracket(matches);
+    expect(nodes.get(79).isLive).toBe(true);
+    expect(nodes.get(79).winner).toBeNull();  // live -> no winner
+    expect(nodes.get(92).home).toBeNull();     // nothing advanced into the R16 slot
+  });
+
+  it('propagates the winner into the next round only once the feeder is FINISHED', () => {
+    const matches = [{
+      id: 79, stage: 'LAST_32', status: 'FINISHED', utcDate: '2026-06-30T22:00:00Z',
+      home: team(1, 'A1'), away: team(9, 'X'),
+      score: { home: 2, away: 0, winner: 'HOME_TEAM' }, city: { id: 'mexico-city' },
+    }];
+    const { nodes } = resolveBracket(matches);
+    expect(nodes.get(79).winner.name).toBe('A1');
+    expect(nodes.get(92).home?.id).toBe(1); // A1 advances into the R16 slot
+  });
+
   it('attaches an R16 fixture (with its teams) to the right slot by city', () => {
     // Slot 92 = Mexico City in the Round of 16; feeders are R32 slots 79 + 80.
     const matches = [{

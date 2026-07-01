@@ -13,9 +13,15 @@ export function normalizeTeam(t) {
 // documented "IN_PLAY". Everything downstream keys off IN_PLAY/PAUSED, so a
 // "LIVE" match would render as an un-started fixture (kickoff time, no score)
 // and be skipped by the "what to watch" hero. Canonicalize at ingestion.
-// (Kept identical to server/normalize.js — both must stay in sync.)
 const STATUS_ALIASES = { LIVE: 'IN_PLAY' };
 const canonicalStatus = (status) => STATUS_ALIASES[status] ?? status;
+
+// A winner is only real once the match is FINISHED/AWARDED. The feed reports a
+// PROVISIONAL winner on LIVE/IN_PLAY/PAUSED matches reflecting the current
+// scoreline (winner:HOME_TEAM at 2-0 in the 60th minute, even winner:DRAW at
+// 0-0). Passing that through advanced a still-leading side into the next
+// knockout round ("Mexico in the Round of 16 before full time"). Gate it.
+const DECIDED = new Set(['FINISHED', 'AWARDED']);
 
 export function normalizeMatch(m) {
   const s = m.score ?? {};
@@ -43,6 +49,8 @@ export function normalizeMatch(m) {
   if (!winner && shootout && (ft.home ?? 0) !== (ft.away ?? 0)) {
     winner = (ft.home ?? 0) > (ft.away ?? 0) ? 'HOME_TEAM' : 'AWAY_TEAM';
   }
+  // Only trust a winner on a decided match — never the live provisional one.
+  if (!DECIDED.has(m.status)) winner = null;
 
   return {
     id: m.id,
