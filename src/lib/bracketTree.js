@@ -56,8 +56,15 @@ export function resolveBracket(knockoutMatches = [], standings = null) { // esli
     if (fd) {
       home = fd.home?.id ? fd.home : null;
       away = fd.away?.id ? fd.away : null;
-      if (fd.score?.winner === 'HOME_TEAM') { winner = home; loser = away; }
-      else if (fd.score?.winner === 'AWAY_TEAM') { winner = away; loser = home; }
+      // Only a FINISHED match has a real winner. The feed sets score.winner to the
+      // CURRENT leader on live matches, so without this gate a still-leading side
+      // gets propagated into the next round (e.g. Mexico shown in the Round of 16
+      // before full time). Defense-in-depth: normalize already nulls a non-final
+      // winner, but the bracket must never advance anyone off a non-final result.
+      if (DONE.has(fd.status)) {
+        if (fd.score?.winner === 'HOME_TEAM') { winner = home; loser = away; }
+        else if (fd.score?.winner === 'AWAY_TEAM') { winner = away; loser = home; }
+      }
     }
 
     nodes.set(no, {

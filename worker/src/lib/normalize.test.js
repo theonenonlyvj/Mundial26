@@ -50,4 +50,28 @@ describe('normalizeMatch', () => {
     expect(m.status).toBe('IN_PLAY');
     expect(m.score).toMatchObject({ home: 1, away: 0 });
   });
+
+  it('drops the feed\'s PROVISIONAL winner on a non-finished match (live leader is not a result)', () => {
+    // The feed sets winner=HOME_TEAM on a live 2-0 game (and winner=DRAW at 0-0).
+    const live = normalizeMatch({
+      id: 9, status: 'LIVE', homeTeam: { id: 1, name: 'Mexico' }, awayTeam: { id: 2, name: 'Ecuador' },
+      score: { winner: 'HOME_TEAM', fullTime: { home: 2, away: 0 }, halfTime: {} },
+    });
+    expect(live.status).toBe('IN_PLAY');
+    expect(live.score.winner).toBeNull();               // NOT HOME_TEAM — game isn't over
+    expect([live.score.home, live.score.away]).toEqual([2, 0]); // score still shown
+    const draw = normalizeMatch({
+      id: 9, status: 'IN_PLAY', homeTeam: {}, awayTeam: {},
+      score: { winner: 'DRAW', fullTime: { home: 0, away: 0 }, halfTime: {} },
+    });
+    expect(draw.score.winner).toBeNull();
+  });
+
+  it('keeps the winner once the match is FINISHED', () => {
+    const done = normalizeMatch({
+      id: 9, status: 'FINISHED', homeTeam: { id: 1, name: 'Mexico' }, awayTeam: { id: 2, name: 'Ecuador' },
+      score: { winner: 'HOME_TEAM', fullTime: { home: 2, away: 0 }, halfTime: {} },
+    });
+    expect(done.score.winner).toBe('HOME_TEAM');
+  });
 });
