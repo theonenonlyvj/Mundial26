@@ -21,4 +21,19 @@ describe('api client', () => {
     await getMatches();
     expect(called).toBe('/api/matches');
   });
+
+  it('canonicalizes a "LIVE" match status to IN_PLAY, leaving others untouched', async () => {
+    vi.stubGlobal('fetch', async () => ({
+      ok: true,
+      json: async () => ({ updatedAt: 1, stale: false, matches: [
+        { id: 1, status: 'LIVE', score: { home: 2, away: 0 } },
+        { id: 2, status: 'FINISHED' },
+        { id: 3, status: 'TIMED' },
+      ] }),
+    }));
+    const data = await getMatches();
+    expect(data.matches.map((m) => m.status)).toEqual(['IN_PLAY', 'FINISHED', 'TIMED']);
+    expect(data.matches[0].score).toEqual({ home: 2, away: 0 }); // rest of the object preserved
+    expect(data.stale).toBe(false);
+  });
 });
