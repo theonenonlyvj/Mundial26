@@ -29,13 +29,18 @@ const STEPS = [
     title: 'Then it\'s knockout',
     body: <>Those 32 teams enter the <Term define={defineTerm('roundOf32')}>Round of 32</Term>: win or you're out, all the way to the Final. That's <Term define={defineTerm('knockout')}>knockout</Term>.</>,
   },
+  {
+    n: 6,
+    title: 'What if a knockout game is tied?',
+    body: <>They play <Term define={defineTerm('extraTime')}>extra time</Term> — and if it's still level, a <Term define={defineTerm('penalties')}>penalty shootout</Term> decides who advances.</>,
+  },
 ];
 
 export default function HowItWorks({ open, onClose }) {
   return (
     <Modal open={open} title="How the World Cup works" onClose={onClose}>
       <p>
-        New to soccer? Here's the whole tournament in 30 seconds. Hover any{' '}
+        New to soccer? Here's the whole tournament in 30 seconds. Tap any{' '}
         <Term define={defineTerm('goalDifference')}>underlined term</Term> for a plain-English definition.
       </p>
       {STEPS.map((s) => (

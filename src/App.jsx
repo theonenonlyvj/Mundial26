@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './theme/global.css';
 import TodayView from './views/TodayView.jsx';
 import StandingsView from './views/StandingsView.jsx';
@@ -15,9 +15,22 @@ const VIEWS = [
   { key: 'standings', label: 'Standings' },
 ];
 
+const SEEN_KEY = 'm26_seenHowItWorks';
+function hasSeenIntro() {
+  try { return typeof localStorage !== 'undefined' && localStorage.getItem(SEEN_KEY) === '1'; }
+  catch { return true; } // storage blocked -> don't nag
+}
+
 export default function App() {
   const [view, setView] = useState('today');
   const [showHelp, setShowHelp] = useState(false);
+  // First-time visitors get the explainer opened for them, once. Returning
+  // visitors (flag set) don't; storage blocked is treated as "seen".
+  useEffect(() => { if (!hasSeenIntro()) setShowHelp(true); }, []);
+  const closeHelp = () => {
+    setShowHelp(false);
+    try { localStorage?.setItem(SEEN_KEY, '1'); } catch { /* ignore */ }
+  };
   return (
     <div className="app">
       <header className="app__header">
@@ -42,7 +55,7 @@ export default function App() {
         {view === 'scorers' && <ScorersView />}
         {view === 'standings' && <StandingsView />}
       </main>
-      <HowItWorks open={showHelp} onClose={() => setShowHelp(false)} />
+      <HowItWorks open={showHelp} onClose={closeHelp} />
     </div>
   );
 }
