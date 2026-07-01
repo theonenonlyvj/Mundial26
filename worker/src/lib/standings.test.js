@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { compareRows, rankGroup, advancementStatus, bestThirds } from './standings.js';
+import { compareRows, rankGroup, advancementStatus, bestThirds, securedGroupStats, groupLetter } from './standings.js';
 
 const row = (over) => ({ team: { id: over.id }, played: 3, won: 0, draw: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0, ...over });
 
@@ -112,6 +112,63 @@ describe('advancementStatus (incomplete — a tie is not a threat)', () => {
     expect(out.find((r) => r.team.id === 'a').status).toBe('through');
     // rivals themselves are still genuinely alive (they can yet exceed each other)
     expect(out.find((r) => r.team.id === 'b').status).toBe('alive');
+  });
+});
+
+describe('securedGroupStats (finished-only)', () => {
+  it('counts only FINISHED group matches and flags a live group as incomplete', () => {
+    const matches = [
+      { stage: 'GROUP_STAGE', group: 'GROUP_A', status: 'FINISHED', home: { id: 1 }, away: { id: 2 }, score: { home: 2, away: 0 } },
+      { stage: 'GROUP_STAGE', group: 'GROUP_A', status: 'IN_PLAY', home: { id: 1 }, away: { id: 3 }, score: { home: 1, away: 0 } }, // live -> ignored
+    ];
+    const g = securedGroupStats(matches).get('A');
+    expect(g.complete).toBe(false);            // a match is still live
+    expect(g.points.get(1)).toBe(3);           // only the finished win — NOT the live 1-0
+    expect(g.played.get(1)).toBe(1);
+    expect(g.points.get(2)).toBe(0);
+    expect(g.points.get(3)).toBeUndefined();   // opponent in the live game not counted
+  });
+  it('normalizes group keys across the feed\'s forms', () => {
+    expect(groupLetter('GROUP_A')).toBe('A');
+    expect(groupLetter('Group A')).toBe('A');
+    expect(groupLetter('A')).toBe('A');
+  });
+});
+
+describe('advancementStatus (secured gate — no clinch off a live game)', () => {
+  it('does NOT mark a team through when its clinch depends on a still-live matchday-3 game', () => {
+    // Feed's provisional table counts team a's LIVE matchday-3 win (played 3, 6 pts).
+    const ranked = rankGroup([
+      row({ id: 'a', played: 3, points: 6 }),
+      row({ id: 'b', played: 2, points: 3 }),
+      row({ id: 'c', played: 2, points: 3 }),
+      row({ id: 'd', played: 3, points: 0 }),
+    ]);
+    // Trusting the feed clinches team a (the bug).
+    expect(advancementStatus(ranked).find((r) => r.team.id === 'a').status).toBe('through');
+    // Secured (finished only): a has really played 2 for 3 pts; the group is not complete.
+    const secured = {
+      complete: false,
+      points: new Map([['a', 3], ['b', 3], ['c', 3], ['d', 0]]),
+      played: new Map([['a', 2], ['b', 2], ['c', 2], ['d', 3]]),
+    };
+    expect(advancementStatus(ranked, secured).find((r) => r.team.id === 'a').status).toBe('alive');
+  });
+
+  it('still resolves through/out normally once the group is genuinely complete', () => {
+    const ranked = rankGroup([
+      row({ id: 'a', points: 9 }), row({ id: 'b', points: 6 }),
+      row({ id: 'c', points: 3 }), row({ id: 'd', points: 0 }),
+    ]);
+    const secured = {
+      complete: true,
+      points: new Map([['a', 9], ['b', 6], ['c', 3], ['d', 0]]),
+      played: new Map([['a', 3], ['b', 3], ['c', 3], ['d', 3]]),
+    };
+    const out = advancementStatus(ranked, secured);
+    expect(out.find((r) => r.team.id === 'a').status).toBe('through');
+    expect(out.find((r) => r.team.id === 'b').status).toBe('through');
+    expect(out.find((r) => r.team.id === 'd').status).toBe('out');
   });
 });
 

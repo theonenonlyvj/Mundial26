@@ -8,6 +8,7 @@ import './MatchSticker.css';
 
 const LIVE = new Set(['IN_PLAY', 'PAUSED']);
 const PLAYED = new Set(['IN_PLAY', 'PAUSED', 'FINISHED']);
+const FINISHED = new Set(['FINISHED', 'AWARDED']);
 
 // A knockout decided on penalties shows "1-1" — spell out who actually advanced.
 function penaltyLine(match) {
@@ -24,7 +25,11 @@ export default function MatchSticker({ match, now = new Date().toISOString(), fe
   const showScore = PLAYED.has(match.status);
   const stage = showStage ? stageLabel(match.stage, match.group) : null;
   const phase = isLive ? livePhase(match) : null;
-  const pens = match.score?.shootout ? penaltyLine(match) : null;
+  // Only spell out a shootout result once the match is actually over. During a
+  // live shootout the feed already carries duration=PENALTY_SHOOTOUT + a running
+  // aggregate, which would otherwise render "Decided on penalties (…)" before
+  // anyone has won (the live "Penalties" phase chip covers the in-progress case).
+  const pens = (FINISHED.has(match.status) && match.score?.shootout) ? penaltyLine(match) : null;
   const rootClass = ['match', featured && 'match--featured'].filter(Boolean).join(' ');
   return (
     <StickerCard foil={isLive || featured} className={featured ? 'match--featured-card' : ''}>
