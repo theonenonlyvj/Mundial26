@@ -60,7 +60,18 @@ export async function buildSnapshot({ apiKey, fetchImpl = fetch, now = () => Dat
     client.getMatches(), client.getStandings(), client.getScorers(),
   ]);
   const at = now();
-  const matches = (rawMatches.matches ?? [])
+  const rawList = rawMatches.matches ?? [];
+  // Histogram of the RAW upstream status strings (before normalizeMatch canonicalizes
+  // them). This is the diagnostic record of what vocabulary the feed actually emits —
+  // e.g. it reports in-play games as "LIVE", not the documented "IN_PLAY". Persisted +
+  // console-logged so a novel status (a halftime label that isn't PAUSED, say) surfaces
+  // instead of silently breaking rendering.
+  const rawStatusCounts = {};
+  for (const m of rawList) {
+    const s = m.status ?? 'null';
+    rawStatusCounts[s] = (rawStatusCounts[s] ?? 0) + 1;
+  }
+  const matches = rawList
     .map(normalizeMatch)
     .map((m) => ({ ...m, city: resolveCity(m), channels: channelsForMatch(m.id) }));
   return {
@@ -68,5 +79,6 @@ export async function buildSnapshot({ apiKey, fetchImpl = fetch, now = () => Dat
     standings: { ...transformStandings(rawStandings), updatedAt: at, stale: false },
     scorers: { updatedAt: at, stale: false, scorers: (rawScorers.scorers ?? []).map(normalizeScorer) },
     reference: { hostCities: HOST_CITIES },
+    rawStatusCounts,
   };
 }

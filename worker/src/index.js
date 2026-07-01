@@ -31,10 +31,39 @@ export function handleRequest(req, snap) {
 }
 
 const KEY = 'snapshot:v1';
+const STATUSLOG_KEY = 'statuslog:v1';
+
+// The status strings we know how to handle (football-data's documented set + "LIVE",
+// which the WC feed actually emits for in-play games and normalizeMatch aliases to
+// IN_PLAY). Anything outside this set is a NOVEL status worth surfacing loudly — it's
+// exactly the kind of thing that silently broke live rendering before.
+const KNOWN_STATUSES = new Set([
+  'SCHEDULED', 'TIMED', 'IN_PLAY', 'PAUSED', 'LIVE',
+  'FINISHED', 'SUSPENDED', 'POSTPONED', 'CANCELLED', 'AWARDED', 'null',
+]);
 
 async function readSnapshot(env) {
   const raw = await env.DATA.get(KEY);
   return raw ? JSON.parse(raw) : null;
+}
+
+// Append a timestamped entry to the status-vocabulary log — but ONLY when the SET of
+// raw statuses the feed emits changes vs the prior snapshot (a score-only change is
+// not new vocabulary). That keeps this to a handful of KV writes across the whole
+// tournament (KV free tier = 1k writes/day) while still capturing every transition:
+// the first "LIVE", the first "PAUSED", any never-seen status. Read via /api/statuslog.
+async function logStatusVocab(env, nowMs, prior, counts, unknown) {
+  const vocab = Object.keys(counts).sort().join(',');
+  const priorVocab = prior?.rawStatusCounts ? Object.keys(prior.rawStatusCounts).sort().join(',') : '';
+  if (vocab === priorVocab) return;
+  try {
+    const raw = await env.DATA.get(STATUSLOG_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    arr.push({ at: nowMs, counts, unknown });
+    await env.DATA.put(STATUSLOG_KEY, JSON.stringify(arr.slice(-500)));
+  } catch (e) {
+    console.error('mundial26: statuslog write failed:', e?.message ?? String(e));
+  }
 }
 
 // What we treat as a meaningful change (skip KV writes otherwise — KV free tier
@@ -146,8 +175,17 @@ export async function runScheduled({ env, nowMs, fetchImpl = fetch }) {
   }
 
   snap = preserveDecided(prior, snap);
+
+  // Observability: record the raw status vocabulary every tick (visible in
+  // `wrangler tail`), and warn loudly on any status we don't recognize.
+  const counts = snap.rawStatusCounts ?? {};
+  const unknown = Object.keys(counts).filter((s) => !KNOWN_STATUSES.has(s));
+  console.log('mundial26 cron: raw feed statuses', JSON.stringify(counts));
+  if (unknown.length) console.warn('mundial26 cron: UNMAPPED feed status(es):', unknown.join(', '));
+
   if (prior && signature(prior) === signature(snap)) return { unchanged: true };
   await logChanges(env, nowMs, changedMatches(prior, snap));
+  await logStatusVocab(env, nowMs, prior, counts, unknown);
   await env.DATA.put(KEY, JSON.stringify({ at: nowMs, ...snap }));
   console.log('mundial26 cron: snapshot updated at', nowMs);
   return { written: true };
@@ -158,7 +196,14 @@ export default {
     ctx.waitUntil(runScheduled({ env, nowMs: Date.now(), fetchImpl: fetch }));
   },
   async fetch(req, env) {
-    if (new URL(req.url).pathname === '/api/log') return handleLog(req, env);
+    const { pathname } = new URL(req.url);
+    if (pathname === '/api/log') return handleLog(req, env);
+    if (pathname === '/api/statuslog') {
+      const raw = await env.DATA.get(STATUSLOG_KEY);
+      return new Response(raw ?? '[]', {
+        headers: { 'content-type': 'application/json', 'cache-control': 'no-store', ...CORS },
+      });
+    }
     const snap = await readSnapshot(env);
     return handleRequest(req, snap);
   },
