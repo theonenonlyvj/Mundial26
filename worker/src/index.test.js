@@ -209,3 +209,40 @@ describe('game-state logging', () => {
     expect(await res.json()).toEqual({ count: 1, rows });
   });
 });
+
+describe('status-vocabulary logging', () => {
+  let logSpy; let warnSpy; let errSpy;
+  beforeEach(() => {
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+  afterEach(() => { logSpy.mockRestore(); warnSpy.mockRestore(); errSpy.mockRestore(); });
+
+  it('records the raw status vocabulary to KV and warns on an UNMAPPED status', async () => {
+    const env = { DATA: kv(schedule), FOOTBALL_DATA_API_KEY: 'k' };
+    await runScheduled({ env, nowMs: koMs + 30 * 60_000, fetchImpl: liveFetch('HALF_TIME', 1) });
+    const logged = JSON.parse(env.DATA.store.get('statuslog:v1'));
+    expect(logged).toHaveLength(1);
+    expect(logged[0].counts).toEqual({ HALF_TIME: 1 });
+    expect(logged[0].unknown).toContain('HALF_TIME');
+    expect(warnSpy).toHaveBeenCalled(); // novel status surfaced loudly
+  });
+
+  it('does NOT re-write the statuslog when the status vocabulary is unchanged', async () => {
+    const env = { DATA: kv(schedule), FOOTBALL_DATA_API_KEY: 'k' };
+    await runScheduled({ env, nowMs: koMs + 30 * 60_000, fetchImpl: liveFetch('IN_PLAY', 1) }); // new vocab -> logs
+    await runScheduled({ env, nowMs: koMs + 31 * 60_000, fetchImpl: liveFetch('IN_PLAY', 2) }); // goal, same vocab -> skip
+    const logged = JSON.parse(env.DATA.store.get('statuslog:v1'));
+    expect(logged).toHaveLength(1); // still one entry; vocabulary didn't change
+  });
+
+  it('GET /api/statuslog returns the log with no-store', async () => {
+    const entries = [{ at: 1, counts: { LIVE: 1, FINISHED: 3 }, unknown: [] }];
+    const env = { DATA: { get: async (k) => (k === 'statuslog:v1' ? JSON.stringify(entries) : null) } };
+    const res = await worker.fetch(new Request('https://w.dev/api/statuslog'), env);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('cache-control')).toBe('no-store');
+    expect(await res.json()).toEqual(entries);
+  });
+});

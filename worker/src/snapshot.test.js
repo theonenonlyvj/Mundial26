@@ -53,6 +53,18 @@ describe('buildSnapshot', () => {
   it('rejects when an upstream fetch fails (so the cron keeps the prior snapshot)', async () => {
     await expect(buildSnapshot({ apiKey: 'k', fetchImpl: fakeFetch({}) })).rejects.toThrow();
   });
+
+  it('records a histogram of the RAW upstream statuses for diagnostics', async () => {
+    const snap = await buildSnapshot({ apiKey: 'k', fetchImpl: fakeFetch(RAW), now: () => 1 });
+    expect(snap.rawStatusCounts).toEqual({ TIMED: 1 });
+  });
+
+  it('counts the RAW status even when normalizeMatch aliases it (LIVE -> IN_PLAY)', async () => {
+    const live = { ...RAW, '/competitions/WC/matches': { matches: [{ ...RAW['/competitions/WC/matches'].matches[0], status: 'LIVE' }] } };
+    const snap = await buildSnapshot({ apiKey: 'k', fetchImpl: fakeFetch(live), now: () => 1 });
+    expect(snap.rawStatusCounts).toEqual({ LIVE: 1 });      // raw vocabulary preserved
+    expect(snap.matches.matches[0].status).toBe('IN_PLAY'); // served status is canonical
+  });
 });
 
 const KO = '2026-06-29T18:00:00Z';
