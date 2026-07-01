@@ -15,13 +15,7 @@ if (typeof globalThis.localStorage === 'undefined') {
   };
 }
 
-// Keep the cache from leaking between tests, and default every test to a
-// "returning visitor" so the first-visit onboarding modal doesn't auto-open in
-// unrelated view/App tests. The onboarding test clears this flag to exercise
-// the first-visit path explicitly.
+// Keep the cache from leaking between tests.
 beforeEach(() => {
-  try {
-    localStorage.clear();
-    localStorage.setItem('m26_seenHowItWorks', '1');
-  } catch { /* ignore */ }
+  try { localStorage.clear(); } catch { /* ignore */ }
 });
