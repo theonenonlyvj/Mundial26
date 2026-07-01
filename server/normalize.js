@@ -9,6 +9,14 @@ export function normalizeTeam(t) {
   };
 }
 
+// football-data has reported in-play WC matches as "LIVE" instead of the
+// documented "IN_PLAY". Everything downstream keys off IN_PLAY/PAUSED, so a
+// "LIVE" match would render as an un-started fixture (kickoff time, no score)
+// and be skipped by the "what to watch" hero. Canonicalize at ingestion.
+// (Kept identical to worker/src/lib/normalize.js — both must stay in sync.)
+const STATUS_ALIASES = { LIVE: 'IN_PLAY' };
+const canonicalStatus = (status) => STATUS_ALIASES[status] ?? status;
+
 export function normalizeMatch(m) {
   const s = m.score ?? {};
   const ft = s.fullTime ?? {};
@@ -39,7 +47,7 @@ export function normalizeMatch(m) {
   return {
     id: m.id,
     utcDate: m.utcDate,
-    status: m.status,
+    status: canonicalStatus(m.status),
     stage: m.stage,
     group: m.group ?? null,
     matchday: m.matchday ?? null,

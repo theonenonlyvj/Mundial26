@@ -41,4 +41,13 @@ describe('normalizeMatch', () => {
     expect(m.score.winner).toBe('HOME_TEAM');
     expect(m.score.penalties).toEqual({ home: 5, away: 4 });
   });
+
+  it('canonicalizes the feed\'s "LIVE" status to IN_PLAY', () => {
+    const m = normalizeMatch({
+      id: 3, status: 'LIVE', homeTeam: { name: 'Mexico' }, awayTeam: { name: 'Ecuador' },
+      score: { fullTime: { home: 1, away: 0 }, halfTime: {} },
+    });
+    expect(m.status).toBe('IN_PLAY');
+    expect(m.score).toMatchObject({ home: 1, away: 0 });
+  });
 });
