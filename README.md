@@ -11,17 +11,15 @@ Mundial26 visualizes what's been played and what's coming up — by **date** and
 - **Standings & Bracket** — group tables with plain-English advancement cues, plus the knockout bracket.
 
 ## Status
-🚧 In design. See the spec: [`docs/superpowers/specs/2026-06-18-mundial26-design.md`](docs/superpowers/specs/2026-06-18-mundial26-design.md).
+✅ **Live: https://mundial26-app.onrender.com** — a static SPA on Render, backed by a Cloudflare Worker (edge KV snapshot, refreshed by a 1-minute cron).
 
 ## Data
 Fixtures, results, and standings come from the [football-data.org](https://www.football-data.org) free API (no live tick — refreshed periodically). Host-city and group reference data is bundled.
 
 ## Run locally
-1. `cp .env.example .env` and (optionally) add `FOOTBALL_DATA_API_KEY`. Without a key the app serves bundled snapshot data.
-2. `npm install`
-3. `npm run dev` — Vite on its dev port, Express API on :3000 (proxied).
+1. `npm install`
+2. `npm run dev` — Vite dev server. The SPA fetches live data straight from the Cloudflare Worker (proxied at `/api`). No local API server and no API key needed locally — the `FOOTBALL_DATA_API_KEY` lives on the Worker.
 
-## Deploy (Render)
-- Push to GitHub, create a Render **Blueprint** from `render.yaml`.
-- Set `FOOTBALL_DATA_API_KEY` in the Render dashboard (Environment).
-- Render runs `npm install && npm run build`, then `npm start` (Express serves `dist/` + `/api`).
+## Deploy
+- **Frontend** (Render static site `mundial26-app`): push to `main` → Render auto-builds from `render.yaml` (`npm run build`, publishes `dist/`). Set `VITE_API_URL` to the Worker URL in the dashboard.
+- **Backend** (Cloudflare Worker `mundial26-data`): `cd worker && npx wrangler deploy`. It holds the `FOOTBALL_DATA_API_KEY` secret and a 1-minute cron refreshes the KV snapshot the SPA reads. (No Render backend — the old Express API was retired.)

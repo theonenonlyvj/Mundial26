@@ -1,14 +1,12 @@
-# This blueprint manages ONLY the static SPA (always-on CDN).
+# Render Blueprint for Mundial26's PUBLIC SITE — the static SPA only.
 #
-# The API runs on the pre-existing `mundial26` web service
-# (https://mundial26-y28p.onrender.com), which was created by hand on the first
-# deploy — OUTSIDE this blueprint. A blueprint can't adopt a hand-made service by
-# name, so declaring the web service here just made Render create a DUPLICATE.
-# We therefore configure the API service directly in its own dashboard (env vars
-# like CLIENT_ORIGIN), and keep this file scoped to the static frontend only.
+# Architecture: this static site (mundial26-app) IS the public URL. It fetches all
+# data at runtime from the Cloudflare Worker `mundial26-data`
+# (https://mundial26-data.theonenonlyvj.workers.dev), which serves a KV snapshot
+# refreshed by a 1-minute cron. There is NO Render backend service — the old
+# hand-made Express API (mundial26-y28p) has been retired.
 services:
   # --- SPA static site (CDN, always-on, no spin-down) ---
-  # The fast URL to share. Calls the existing -y28p web service for data.
   # Static sites use type:web + runtime:static in the current Render schema.
   - type: web
     runtime: static
@@ -21,8 +19,8 @@ services:
         source: /*
         destination: /index.html
     envVars:
-      # Absolute URL of the existing API service, baked into the build (set in the
-      # dashboard). Unset locally -> dev uses the vite proxy.
-      # e.g. https://mundial26-y28p.onrender.com
+      # The Cloudflare Worker URL, baked into the build (set in the dashboard).
+      # Unset locally -> the vite proxy forwards /api to the same Worker.
+      # e.g. https://mundial26-data.theonenonlyvj.workers.dev
       - key: VITE_API_URL
         sync: false
