@@ -65,6 +65,17 @@ describe('MatchSticker', () => {
     expect(screen.getByText(/Paraguay win 5–4 on penalties/)).toBeInTheDocument();
   });
 
+  it('does NOT show a penalties result while the shootout is still live', () => {
+    // Live shootout: duration set + running aggregate, but game not over. Must not
+    // render "Decided on penalties" before anyone has won.
+    render(<MatchSticker match={{
+      ...base, status: 'IN_PLAY',
+      score: { home: 1, away: 1, winner: null, shootout: true, penalties: { home: 2, away: 1 } },
+    }} />);
+    expect(screen.queryByText(/on penalties/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Decided on penalties/i)).not.toBeInTheDocument();
+  });
+
   it('shows the live phase (halftime / 2nd half) on a live match', () => {
     const { rerender } = render(<MatchSticker match={{ ...base, status: 'PAUSED', score: { home: 1, away: 0, halfTime: { home: 1, away: 0 } } }} />);
     expect(screen.getByText(/halftime/i)).toBeInTheDocument();

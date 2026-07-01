@@ -1,6 +1,6 @@
 import { createFootballDataClient } from './lib/footballDataClient.js';
 import { normalizeMatch, normalizeStandings, normalizeScorer } from './lib/normalize.js';
-import { rankGroup, advancementStatus, bestThirds } from './lib/standings.js';
+import { rankGroup, advancementStatus, bestThirds, securedGroupStats, groupLetter } from './lib/standings.js';
 import { HOST_CITIES } from './lib/hostCities.js';
 import { cityIdForMatch } from './lib/matchVenues.js';
 import { channelsForMatch } from './lib/matchChannels.js';
@@ -44,10 +44,16 @@ function resolveCity(match) {
   return null;
 }
 
-function transformStandings(raw) {
+function transformStandings(raw, matches) {
   const norm = normalizeStandings(raw);
+  // Secured (finished-only) points/played per group, so clinch/elimination is
+  // never called off a live match. Absent matches -> null -> feed fallback.
+  const secured = securedGroupStats(matches);
   const ranked = norm.groups.map((g) => ({ group: g.group, table: rankGroup(g.table) }));
-  const groups = ranked.map((g) => ({ group: g.group, table: advancementStatus(g.table) }));
+  const groups = ranked.map((g) => ({
+    group: g.group,
+    table: advancementStatus(g.table, secured.get(groupLetter(g.group)) ?? null),
+  }));
   const bestThirdIds = bestThirds(ranked.map((g) => g.table));
   return { groups, bestThirdIds };
 }
@@ -76,7 +82,7 @@ export async function buildSnapshot({ apiKey, fetchImpl = fetch, now = () => Dat
     .map((m) => ({ ...m, city: resolveCity(m), channels: channelsForMatch(m.id) }));
   return {
     matches: { updatedAt: at, stale: false, matches },
-    standings: { ...transformStandings(rawStandings), updatedAt: at, stale: false },
+    standings: { ...transformStandings(rawStandings, matches), updatedAt: at, stale: false },
     scorers: { updatedAt: at, stale: false, scorers: (rawScorers.scorers ?? []).map(normalizeScorer) },
     reference: { hostCities: HOST_CITIES },
     rawStatusCounts,
