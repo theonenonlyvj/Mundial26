@@ -30,6 +30,26 @@ describe('normalizeMatch', () => {
     });
     expect(m.score.halfTime).toEqual({ home: 1, away: 0 });
   });
+
+  it('canonicalizes the feed\'s "LIVE" status to IN_PLAY so live games read as live', () => {
+    // The WC feed reports an in-play match as "LIVE"; everything downstream keys
+    // off IN_PLAY/PAUSED, so without this a live game renders as an un-started
+    // fixture (kickoff time, no score) and is skipped by the "what to watch" hero.
+    const m = normalizeMatch({
+      id: 3, utcDate: '2026-07-01T01:00:00Z', status: 'LIVE',
+      homeTeam: { name: 'Mexico' }, awayTeam: { name: 'Ecuador' },
+      score: { fullTime: { home: 1, away: 0 }, halfTime: {} },
+    });
+    expect(m.status).toBe('IN_PLAY');
+    expect(m.score).toMatchObject({ home: 1, away: 0 });
+  });
+
+  it('passes through already-canonical statuses unchanged', () => {
+    const base = { id: 4, homeTeam: { name: 'A' }, awayTeam: { name: 'B' }, score: {} };
+    expect(normalizeMatch({ ...base, status: 'FINISHED' }).status).toBe('FINISHED');
+    expect(normalizeMatch({ ...base, status: 'TIMED' }).status).toBe('TIMED');
+    expect(normalizeMatch({ ...base, status: 'PAUSED' }).status).toBe('PAUSED');
+  });
 });
 
 describe('normalizeScorer', () => {
