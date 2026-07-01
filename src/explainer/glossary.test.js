@@ -3,7 +3,7 @@ import { TERMS, defineTerm } from './glossary.js';
 
 describe('glossary', () => {
   it('defines the core newcomer terms', () => {
-    for (const key of ['groupStage', 'goalDifference', 'knockout', 'draw', 'bestThird', 'roundOf32']) {
+    for (const key of ['groupStage', 'goalDifference', 'knockout', 'draw', 'bestThird', 'roundOf32', 'extraTime', 'penalties', 'goldenBoot', 'points']) {
       expect(TERMS[key]?.define).toBeTruthy();
     }
   });

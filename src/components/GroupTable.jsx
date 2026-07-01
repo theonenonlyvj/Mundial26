@@ -18,11 +18,13 @@ export default function GroupTable({ group }) {
         <thead>
           <tr>
             <th>Team</th>
-            <th title="Played">P</th>
-            <th>W</th><th>D</th><th>L</th>
-            <th title="Goals for">GF</th>
+            <th><Term define={defineTerm('played')}>P</Term></th>
+            <th><Term define={defineTerm('won')}>W</Term></th>
+            <th><Term define={defineTerm('draw')}>D</Term></th>
+            <th><Term define={defineTerm('lost')}>L</Term></th>
+            <th><Term define={defineTerm('goalsFor')}>GF</Term></th>
             <th><Term define={defineTerm('goalDifference')}>GD</Term></th>
-            <th>Pts</th>
+            <th><Term define={defineTerm('points')}>Pts</Term></th>
             <th>Status</th>
           </tr>
         </thead>

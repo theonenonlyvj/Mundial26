@@ -38,4 +38,24 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: /new to soccer/i }));
     expect(screen.getByRole('dialog', { name: /how the world cup works/i })).toBeInTheDocument();
   });
+
+  it('auto-opens the explainer for a first-time visitor', async () => {
+    localStorage.removeItem('m26_seenHowItWorks'); // fresh visitor
+    await act(async () => { render(<App />); });
+    expect(screen.getByRole('dialog', { name: /how the world cup works/i })).toBeInTheDocument();
+  });
+
+  it('does not auto-open for a returning visitor', async () => {
+    // vitest.setup marks every test a returning visitor by default
+    await act(async () => { render(<App />); });
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('persists the seen flag when the explainer is closed', async () => {
+    localStorage.removeItem('m26_seenHowItWorks');
+    await act(async () => { render(<App />); }); // first visit -> auto-opens
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /close/i })); });
+    expect(localStorage.getItem('m26_seenHowItWorks')).toBe('1');
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
 });
