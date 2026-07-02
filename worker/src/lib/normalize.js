@@ -83,7 +83,11 @@ export function normalizeScorer(s) {
     // For the World Cup the player's club here IS their national team, so the
     // team crest doubles as the country flag.
     name: s?.player?.name ?? 'Unknown',
-    nationality: s?.player?.nationality ?? team.name,
+    // Label the player by the national TEAM they represent at the WC, NOT
+    // football-data's player.nationality — that's their BIRTH country and differs
+    // for naturalized players (Julián Quiñones: born Colombia, plays for Mexico).
+    // The crest is already the team's flag; keep the label consistent with it.
+    nationality: (team.name && team.name !== 'TBD') ? team.name : (s?.player?.nationality ?? team.name),
     team,
     goals: s?.goals ?? 0,
     assists: s?.assists ?? null,

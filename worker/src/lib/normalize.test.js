@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeMatch } from './normalize.js';
+import { normalizeMatch, normalizeScorer } from './normalize.js';
 
 describe('normalizeMatch', () => {
   it('flattens a regular finished match (fullTime = final, winner as given)', () => {
@@ -73,5 +73,24 @@ describe('normalizeMatch', () => {
       score: { winner: 'HOME_TEAM', fullTime: { home: 2, away: 0 }, halfTime: {} },
     });
     expect(done.score.winner).toBe('HOME_TEAM');
+  });
+});
+
+describe('normalizeScorer', () => {
+  it('labels a naturalized player by their national TEAM, not birth nationality', () => {
+    // Julián Quiñones: football-data reports player.nationality = Colombia (birth),
+    // but he plays for Mexico — the crest is the Mexico flag, so the label must be Mexico.
+    const s = normalizeScorer({
+      player: { name: 'Julián Quiñones', nationality: 'Colombia' },
+      team: { id: 769, name: 'Mexico', tla: 'MEX', crest: 'mex.png' },
+      goals: 3,
+    });
+    expect(s.nationality).toBe('Mexico');
+    expect(s.team.name).toBe('Mexico');
+  });
+
+  it('falls back to player nationality only when the team is unknown', () => {
+    const s = normalizeScorer({ player: { name: 'X', nationality: 'Brazil' }, goals: 1 });
+    expect(s.nationality).toBe('Brazil'); // team is TBD -> use player nationality
   });
 });

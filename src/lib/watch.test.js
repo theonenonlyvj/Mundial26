@@ -51,4 +51,23 @@ describe('pickMatchToWatch', () => {
     const pick = pickMatchToWatch([m(1, { stage: 'LAST_16', utcDate: '2026-06-15T18:00:00Z' })], NOW);
     expect(pick.reason).toMatch(/win or go home/i);
   });
+
+  it('headlines a game that kicked off but the feed still says TIMED (free-tier lag), over a future fixture', () => {
+    // The reported bug: USA-Bosnia had kicked off but the feed hadn't flipped it to
+    // live yet, so the hero showed a game days away instead of the one on now.
+    const pick = pickMatchToWatch([
+      m(1, { status: 'TIMED', utcDate: '2026-06-15T11:59:00Z' }), // kicked off 1 min ago
+      m(2, { status: 'TIMED', utcDate: '2026-06-18T18:00:00Z' }), // days away
+    ], NOW); // NOW = 2026-06-15T12:00:00Z
+    expect(pick.match.id).toBe(1);
+    expect(pick.reason).toMatch(/kicking off/i);
+  });
+
+  it('does not headline a stale never-finished game far past kickoff (glitch) over a real upcoming one', () => {
+    const pick = pickMatchToWatch([
+      m(1, { status: 'TIMED', utcDate: '2026-06-15T06:00:00Z' }), // 6h before now (> 4h window)
+      m(2, { status: 'TIMED', utcDate: '2026-06-15T14:00:00Z' }), // the real upcoming game
+    ], NOW);
+    expect(pick.match.id).toBe(2);
+  });
 });
