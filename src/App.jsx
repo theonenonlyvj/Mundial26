@@ -46,7 +46,15 @@ export default function App() {
       </main>
       <footer className="app__footer">
         <p className="app__footer-text">
-          Have Feedback? Want to see my other projects?{' '}
+          Have{' '}
+          <a
+            className="app__footer-link"
+            href="https://theonenonlyvj.github.io/personal-site/contact"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Feedback
+          </a>? Want to see my other projects?{' '}
           <a
             className="app__footer-link"
             href="https://theonenonlyvj.github.io/personal-site"
