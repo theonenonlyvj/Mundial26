@@ -33,6 +33,18 @@ describe('App', () => {
     expect(screen.getByRole('region', { name: /scorers/i })).toBeInTheDocument();
   });
 
+  it('shows a feedback / other-projects footer link to the bio site on every view', async () => {
+    await act(async () => { render(<App />); });
+    const link = screen.getByRole('link', { name: /click here/i });
+    expect(link).toHaveAttribute('href', 'https://theonenonlyvj.github.io/personal-site');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    expect(screen.getByText(/have feedback/i)).toBeInTheDocument();
+    // persists after switching views
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Standings' })); });
+    expect(screen.getByRole('link', { name: /click here/i })).toBeInTheDocument();
+  });
+
   it('does not show the explainer until the button is clicked, then opens it', async () => {
     await act(async () => { render(<App />); });
     expect(screen.queryByRole('dialog')).toBeNull(); // never auto-pops

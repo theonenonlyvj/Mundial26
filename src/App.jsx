@@ -44,6 +44,19 @@ export default function App() {
         {view === 'scorers' && <ScorersView />}
         {view === 'standings' && <StandingsView />}
       </main>
+      <footer className="app__footer">
+        <p className="app__footer-text">
+          Have Feedback? Want to see my other projects?{' '}
+          <a
+            className="app__footer-link"
+            href="https://theonenonlyvj.github.io/personal-site"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Click here
+          </a>.
+        </p>
+      </footer>
       <HowItWorks open={showHelp} onClose={() => setShowHelp(false)} />
     </div>
   );
