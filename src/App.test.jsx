@@ -39,7 +39,8 @@ describe('App', () => {
     expect(link).toHaveAttribute('href', 'https://theonenonlyvj.github.io/personal-site');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
-    expect(screen.getByText(/have feedback/i)).toBeInTheDocument();
+    const feedback = screen.getByRole('link', { name: /feedback/i });
+    expect(feedback).toHaveAttribute('href', 'https://theonenonlyvj.github.io/personal-site/contact');
     // persists after switching views
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Standings' })); });
     expect(screen.getByRole('link', { name: /click here/i })).toBeInTheDocument();
