@@ -29,3 +29,9 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; letter-spacing:
 .app__nav-btn.is-active { background: var(--gold); }
 .app__main { padding: 20px; max-width: 1240px; margin: 0 auto; position: relative; z-index: 1; }
 .app__help { margin-left: auto; border: 0; border-radius: 10px; padding: 8px 14px; font-weight: 800; cursor: pointer; background: var(--gold); color: var(--ink); }
+
+/* Footer — bookends the ink header; gold link reads with high contrast on ink */
+.app__footer { margin-top: 40px; padding: 22px 20px 30px; background: var(--ink); text-align: center; position: relative; z-index: 1; }
+.app__footer-text { margin: 0 auto; max-width: 1240px; font-family: var(--font-body); font-size: 14px; line-height: 1.5; color: #cdbf9b; }
+.app__footer-link { color: var(--gold); font-weight: 800; text-decoration: none; border-bottom: 2px solid var(--gold); padding-bottom: 1px; white-space: nowrap; }
+.app__footer-link:hover, .app__footer-link:focus-visible { color: var(--gold-sheen); border-bottom-color: var(--gold-sheen); outline: none; }
