@@ -97,6 +97,12 @@ NOTE: NED–MAR's true result is **Morocco won 3-2 on pens** (per football-data,
 "Netherlands win 3-1" reading Vijay saw was a transient bad reading.
 
 ## Open threads / TODO
+- [x] **Cards tab — SHELVED (2026-07-06).** football-data's free tier exposes **no** card
+      data: `bookings`/`goals`/team `statistics` are absent (not empty) from BOTH the match
+      list and match detail — probed across 5 finished matches incl. both R16 knockouts.
+      It's a **tier gate, not a bug — don't re-probe.** Full spike + the two revive options
+      (pay football-data / add a 2nd provider): [`docs/cards-feature-spike.md`](./cards-feature-spike.md).
+      Feature branch `maybe-penalties` holds this note only; no Cards code was written.
 - [ ] **Retire `mundial26-y28p`** (human/Render dashboard): suspend → watch a live match → delete.
 - [ ] **Confirm ET/Penalties show LIVE.** `livePhase` now reads `score.duration`, but it's
       unverified whether the free tier sets `EXTRA_TIME`/`PENALTY_SHOOTOUT` *during* the phase or
