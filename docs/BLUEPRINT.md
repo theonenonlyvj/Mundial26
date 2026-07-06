@@ -164,6 +164,13 @@ entry lists or who's currently classified. Qualifying → grid → race is your 
 - **A field you display must exist in your normalizer's output.** We added a
   `livePhase` that read `score.duration`, but the normalizer dropped `duration` — so it
   silently never fired. If you render `x.foo`, make sure normalize emits `foo`.
+- **Verify field availability at the SOURCE before scoping a feature around it.**
+  football-data's free tier omits detailed match events *entirely* — `bookings` (cards),
+  `goals`, lineups, and team `statistics` are **absent (not empty)** from both the match
+  list and match detail; they're paid-tier only. We scoped a whole "Cards" tab from the
+  docs before a ~10-minute authenticated probe showed there was no data to build on.
+  Probe the real payload for the *exact* field first; a docs example ≠ your plan's schema.
+  (See `docs/cards-feature-spike.md`.)
 - **CORS: the browser usually can't call the sports API directly** (football-data
   returns `Access-Control-Allow-Origin: http://localhost`). A server-side proxy
   (the Worker) is mandatory, and it keeps the API key off the client.
