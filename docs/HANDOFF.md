@@ -1,13 +1,15 @@
 # Mundial26 — Handoff / resume doc
 
-Last updated: 2026-06-30. For a fresh agent (or future me) picking this up cold.
+Last updated: 2026-07-05. For a fresh agent (or future me) picking this up cold.
 The generalizable lessons are in [BLUEPRINT.md](./BLUEPRINT.md); this is the concrete
 "what is it, where is everything, what's left" doc.
 
 ## What it is
 A live FIFA World Cup 2026 tracker, built to be exciting + understandable for soccer
 newcomers, in a retro Panini sticker-album look. React 18 + Vite SPA. Repo:
-`github.com/theonenonlyvj/Mundial26`, local at `/Users/vijayram/Cursor/mundial26`.
+`github.com/theonenonlyvj/Mundial26`. Current Hermes checkout used for the 2026-07-05
+mobile footer fix is `/home/alistar/work/Mundial26`; Vijay's older Mac-local path in
+prior notes was `/Users/vijayram/Cursor/mundial26`.
 
 ## Architecture (current, as of 2026-06-30)
 ```
@@ -43,8 +45,9 @@ Render STATIC site "mundial26-app"  →  PUBLIC URL: https://mundial26-app.onren
   staying on v3 deliberately (v4 changes config format).
 - **SPA:** push to `main` → Render auto-deploys the static site (~1–2 min). `VITE_API_URL`
   is a build-time env on the Render `mundial26-app` service.
-- **Tests/build:** root (SPA) = `npx vitest run` and `npx vite build`. Worker =
-  `cd worker && npx vitest run`. As of this writing: **172 SPA + 24 worker tests pass.**
+- **Tests/build:** root (SPA + worker library tests) = `npm test` and `npm run build`.
+  Worker-only deploy/test commands still run from `worker/`. As of 2026-07-05:
+  **174 root tests pass** and `npm run build` passes.
 - **Query the log:** `https://mundial26-data.theonenonlyvj.workers.dev/api/log?match=<id>&limit=N`
   (JSON, newest first), or raw SQL:
   `cd worker && npx wrangler d1 execute mundial26-log --remote --command "SELECT ..."`.
@@ -82,6 +85,14 @@ The hard month-end fights, all fixed + in git history:
    resolving to the winner AND teaching `TeamSticker` to render a `kind:'team'` display (it
    previously fell through to "TBD"). LESSON: verify the render, not just the data.
 6. **D1 game-state log** — added `/api/log`; logs every change.
+7. **Mobile footer blank-space fix (2026-07-05)** — Safari/tall mobile viewports with
+   short content could show the feedback footer in the middle of the page with a large
+   beige blank area below it. Root cause: the app shell was block layout with no
+   viewport-height floor, so short pages ended before the viewport did. Fix: `.app` is
+   now a column flex shell with `min-height: 100vh` + `100dvh`, and `.app__main` grows
+   with `flex: 1` / `width: 100%`. Regression test: `src/theme/global.test.js`.
+   Verification: `npm test`, `npm run build`, and a 1320×2400 headless Chrome mobile
+   measurement showed `spaceAfterFooter: 0`, `scrollHeight: 2400`, footer bottom `2400`.
 NOTE: NED–MAR's true result is **Morocco won 3-2 on pens** (per football-data, settled). A
 "Netherlands win 3-1" reading Vijay saw was a transient bad reading.
 
@@ -97,8 +108,16 @@ NOTE: NED–MAR's true result is **Morocco won 3-2 on pens** (per football-data,
 - [ ] Deferred backlog: a FIFA-launch "adversarial council" produced ~73 findings; triaged in
       the project memory. Lower priority than correctness.
 
+## Current operator expectations
+- Vijay/theonenonlyvj has active users on these apps. Only push high-confidence,
+  small, reversible commits after tests/build and a diff review.
+- Keep docs/notes updated enough for a fresh agent to continue without chat history.
+
 ## Gotchas for the agent
-- **cwd resets between Bash calls** — always `cd /Users/vijayram/Cursor/mundial26` (or `/worker`).
+- **cwd resets between shell/tool calls** — always set the repo cwd explicitly. On this
+  Hermes host use `/home/alistar/work/Mundial26`; on Vijay's Mac use the older
+  `/Users/vijayram/Cursor/mundial26` path if that checkout is still present. Use
+  `worker/` only for Worker-specific deploy/test commands.
 - **A PreToolUse hook blocks writes/`/dev/null` redirects outside `/Cursor`** — don't use
   `2>/dev/null`; write temp files into the session scratchpad or the repo.
 - **Don't re-read a subagent's raw `.output` transcript via shell** — it overflows context.

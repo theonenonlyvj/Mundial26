@@ -125,6 +125,14 @@ The data was perfect; the pixels said "TBD."
 `@testing-library/react`) that asserts the user-visible text, ideally against *live*
 data, for anything user-facing. "The JSON is correct" is not "it's fixed."
 
+For layout bugs, verify the actual viewport shape too. A 2026-07-05 mobile Safari
+report showed the footer sitting above a large blank beige area because the app shell
+was ordinary block layout and short pages ended before a tall viewport did. The durable
+pattern is: root app shell `min-height: 100vh` plus `100dvh`, `display: flex`,
+`flex-direction: column`, and a growing main area (`flex: 1; width: 100%`). Add a CSS
+regression test for that contract and use headless Chrome/mobile metrics to prove the
+footer bottom equals the viewport bottom (`spaceAfterFooter: 0`).
+
 ---
 
 ## 5. Topology: anchor to the fixed schedule, not to identities
