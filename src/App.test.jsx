@@ -21,6 +21,15 @@ describe('App', () => {
     expect(screen.getByRole('banner')).toHaveTextContent('Mundial26');
   });
 
+  it('shows the archive ribbon naming Spain champions on every view', async () => {
+    await act(async () => { render(<App />); });
+    const ribbon = screen.getByRole('note');
+    expect(ribbon).toHaveTextContent(/Spain/);
+    expect(ribbon).toHaveTextContent(/archive/i);
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Standings' })); });
+    expect(screen.getByRole('note')).toHaveTextContent(/Spain/);
+  });
+
   it('switches views via nav', async () => {
     await act(async () => { render(<App />); });
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Standings' })); });
