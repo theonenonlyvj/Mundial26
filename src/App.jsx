@@ -6,6 +6,7 @@ import TimelineView from './views/TimelineView.jsx';
 import MapView from './views/MapView.jsx';
 import ScorersView from './views/ScorersView.jsx';
 import HowItWorks from './explainer/HowItWorks.jsx';
+import Emoji from './components/Emoji.jsx';
 
 const VIEWS = [
   { key: 'today', label: 'Today' },
@@ -37,6 +38,10 @@ export default function App() {
           <button className="app__help" onClick={() => setShowHelp(true)}>New to soccer? Start here</button>
         </nav>
       </header>
+      <div className="app__archive" role="note">
+        <Emoji code="1F3C6" label="trophy" /> <strong>Spain</strong> are the 2026 World Cup
+        champions — this site is now a permanent final-results archive.
+      </div>
       <main className="app__main">
         {view === 'today' && <TodayView />}
         {view === 'timeline' && <TimelineView />}
