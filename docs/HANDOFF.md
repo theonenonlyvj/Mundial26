@@ -1,8 +1,28 @@
 # Mundial26 — Handoff / resume doc
 
-Last updated: 2026-07-05. For a fresh agent (or future me) picking this up cold.
-The generalizable lessons are in [BLUEPRINT.md](./BLUEPRINT.md); this is the concrete
-"what is it, where is everything, what's left" doc.
+Last updated: **2026-07-21 — THE PROJECT IS ARCHIVED.** The 2026 World Cup is over
+(**Spain 1-0 Argentina**, in extra time; England 3rd; Mbappé Golden Boot with 10).
+The generalizable lessons are in [BLUEPRINT.md](./BLUEPRINT.md) — **read §9–10 for
+the outage postmortem and the end-of-life/archive playbook**; this doc is the
+concrete record.
+
+## ⚱️ ARCHIVED STATE (2026-07-21) — read this first
+- The site is a **permanent, fully self-contained static archive** at
+  https://mundial26-app.onrender.com — bundled final data, ZERO network calls,
+  archive ribbon + final-results meta. It needs **no backend, no key, no cron, $0**.
+- **The entire Cloudflare backend was DELETED 2026-07-21** (verified): Worker
+  `mundial26-data` (+ its cron + `FOOTBALL_DATA_API_KEY` secret), KV namespace
+  `ec901d6b56964e9499b00dea8c5f0dda`, D1 `mundial26-log`. The Worker URL now 404s
+  (error 1042). Sections below describing the Worker/KV/D1 are **historical**.
+- All data preserved in-repo: final API payloads in `src/data/final/*.json`; the
+  full 528-row D1 game log + 147-entry status-vocab log in `docs/final-data/`.
+- Archive mechanism: `src/archive.js` (flag) + a short-circuit in
+  `src/api/client.js getJson` (every consumer goes static at one chokepoint);
+  seed beats visitor cache; polling off. Un-archive = flip one flag (needs a new
+  data source). Deploys: push to `main` → Render static, unchanged.
+- Remaining human tasks: delete the dead `VITE_API_URL` env on Render
+  `mundial26-app`; decide the Workers-Paid downgrade before ~Aug 13 (other apps'
+  Workers still use the account).
 
 ## What it is
 A live FIFA World Cup 2026 tracker, built to be exciting + understandable for soccer
@@ -11,7 +31,7 @@ newcomers, in a retro Panini sticker-album look. React 18 + Vite SPA. Repo:
 mobile footer fix is `/home/alistar/work/Mundial26`; Vijay's older Mac-local path in
 prior notes was `/Users/vijayram/Cursor/mundial26`.
 
-## Architecture (current, as of 2026-06-30)
+## Architecture (HISTORICAL — live-era, 2026-06-30 → 2026-07-21; backend now deleted)
 ```
 football-data.org (free tier, server-side key)
         ▼
@@ -29,7 +49,7 @@ Render STATIC site "mundial26-app"  →  PUBLIC URL: https://mundial26-app.onren
   match cycle → delete). Rollback if ever needed = set Render `mundial26-app` env
   `VITE_API_URL` back to `https://mundial26-y28p.onrender.com` and redeploy.
 
-## Cloudflare resources (account: theonenonlyvj)
+## Cloudflare resources (HISTORICAL — all deleted 2026-07-21)
 - Worker: `mundial26-data` (wrangler v3; config `worker/wrangler.toml`).
 - KV namespace (live snapshot): binding `DATA`, id `ec901d6b56964e9499b00dea8c5f0dda`,
   key `snapshot:v1`.
@@ -96,17 +116,13 @@ The hard month-end fights, all fixed + in git history:
 NOTE: NED–MAR's true result is **Morocco won 3-2 on pens** (per football-data, settled). A
 "Netherlands win 3-1" reading Vijay saw was a transient bad reading.
 
-## Open threads / TODO
-- [ ] **Retire `mundial26-y28p`** (human/Render dashboard): suspend → watch a live match → delete.
-- [ ] **Confirm ET/Penalties show LIVE.** `livePhase` now reads `score.duration`, but it's
-      unverified whether the free tier sets `EXTRA_TIME`/`PENALTY_SHOOTOUT` *during* the phase or
-      only at FT. **The D1 log will show it** — after the next knockout that goes to ET/pens,
-      query `/api/log?match=<id>` and check the `duration` column over time.
-- [ ] `score.duration` populates in `/api/matches` on the next live write (was just added).
-- [ ] Optional, declined-for-now: a `?cb=` cache-buster (diagnostic said not needed — list
-      endpoint already fresh); an in-app Logs page (Vijay chose endpoint-only).
-- [ ] Deferred backlog: a FIFA-launch "adversarial council" produced ~73 findings; triaged in
-      the project memory. Lower priority than correctness.
+## Open threads / TODO — ALL CLOSED OR MOOT at archive (2026-07-21)
+- [x] ~~Retire `mundial26-y28p`~~ — deleted by Vijay 2026-07-01.
+- [x] ET/Penalties question — answered by the archived log (`docs/final-data/match_log.json`):
+      the feed does carry `duration` (the final logs as `EXTRA_TIME`).
+- [x] Everything else (cache-buster, Logs page, council backlog, Cards tab — see
+      `docs/cards-feature-spike.md` on branch `maybe-penalties`) — moot; tournament over.
+- [ ] Human: delete dead `VITE_API_URL` env on Render; Workers-Paid downgrade decision (~Aug 13).
 
 ## Current operator expectations
 - Vijay/theonenonlyvj has active users on these apps. Only push high-confidence,
