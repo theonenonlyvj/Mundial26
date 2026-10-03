@@ -1,10 +1,8 @@
 # Render Blueprint for Mundial26's PUBLIC SITE — the static SPA only.
 #
-# Architecture: this static site (mundial26-app) IS the public URL. It fetches all
-# data at runtime from the Cloudflare Worker `mundial26-data`
-# (https://mundial26-data.theonenonlyvj.workers.dev), which serves a KV snapshot
-# refreshed by a 1-minute cron. There is NO Render backend service — the old
-# hand-made Express API (mundial26-y28p) has been retired.
+# Architecture: this static site is a permanent final-results archive. All data
+# is bundled at build time. The former Worker and Express backends were deleted
+# and must not be restored from this blueprint.
 services:
   # --- SPA static site (CDN, always-on, no spin-down) ---
   # Static sites use type:web + runtime:static in the current Render schema.
@@ -18,9 +16,3 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
-    envVars:
-      # The Cloudflare Worker URL, baked into the build (set in the dashboard).
-      # Unset locally -> the vite proxy forwards /api to the same Worker.
-      # e.g. https://mundial26-data.theonenonlyvj.workers.dev
-      - key: VITE_API_URL
-        sync: false

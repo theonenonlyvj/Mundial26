@@ -11,15 +11,33 @@ Mundial26 visualizes what's been played and what's coming up — by **date** and
 - **Standings & Bracket** — group tables with plain-English advancement cues, plus the knockout bracket.
 
 ## Status
-✅ **Live: https://mundial26-app.onrender.com** — a static SPA on Render, backed by a Cloudflare Worker (edge KV snapshot, refreshed by a 1-minute cron).
+
+**Archived:** the tournament is complete. The site is a self-contained static
+final-results archive with bundled data and no runtime API, cron, database, or
+secret. The retired Cloudflare backend was deleted and must not be redeployed.
 
 ## Data
-Fixtures, results, and standings come from the [football-data.org](https://www.football-data.org) free API (no live tick — refreshed periodically). Host-city and group reference data is bundled.
+
+Final fixtures, results, standings, scorers, and reference data are bundled
+under `src/data/final/`. During the tournament the project normalized data from
+[football-data.org](https://www.football-data.org); the preserved live-era
+worker and operational logs are historical material only.
 
 ## Run locally
-1. `npm install`
-2. `npm run dev` — Vite dev server. The SPA fetches live data straight from the Cloudflare Worker (proxied at `/api`). No local API server and no API key needed locally — the `FOOTBALL_DATA_API_KEY` lives on the Worker.
 
-## Deploy
-- **Frontend** (Render static site `mundial26-app`): push to `main` → Render auto-builds from `render.yaml` (`npm run build`, publishes `dist/`). Set `VITE_API_URL` to the Worker URL in the dashboard.
-- **Backend** (Cloudflare Worker `mundial26-data`): `cd worker && npx wrangler deploy`. It holds the `FOOTBALL_DATA_API_KEY` secret and a 1-minute cron refreshes the KV snapshot the SPA reads. (No Render backend — the old Express API was retired.)
+```bash
+npm install
+npm run dev
+```
+
+The archive reads its bundled snapshot and makes no data-network requests.
+
+## Verify
+
+```bash
+npm test
+npm run build
+```
+
+See `docs/BLUEPRINT.md` for reusable live-sports engineering lessons and
+`docs/HANDOFF.md` for the archived architecture. Do not deploy `worker/`.

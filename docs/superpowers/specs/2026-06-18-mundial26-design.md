@@ -2,7 +2,7 @@
 
 - **Date:** 2026-06-18
 - **Status:** Draft — awaiting user review
-- **Project:** Mundial26 (`/Users/vijayram/Cursor/mundial26`)
+- **Project:** Mundial26 (this repository)
 
 ## 1. Vision
 

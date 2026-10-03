@@ -1,6 +1,6 @@
 # Mundial26 — Handoff / resume doc
 
-Last updated: **2026-07-21 — THE PROJECT IS ARCHIVED.** The 2026 World Cup is over
+Status: **THE PROJECT IS ARCHIVED.** The 2026 World Cup is over
 (**Spain 1-0 Argentina**, in extra time; England 3rd; Mbappé Golden Boot with 10).
 The generalizable lessons are in [BLUEPRINT.md](./BLUEPRINT.md) — **read §9–10 for
 the outage postmortem and the end-of-life/archive playbook**; this doc is the
@@ -20,22 +20,19 @@ concrete record.
   `src/api/client.js getJson` (every consumer goes static at one chokepoint);
   seed beats visitor cache; polling off. Un-archive = flip one flag (needs a new
   data source). Deploys: push to `main` → Render static, unchanged.
-- Remaining human tasks: delete the dead `VITE_API_URL` env on Render
-  `mundial26-app`; decide the Workers-Paid downgrade before ~Aug 13 (other apps'
-  Workers still use the account).
+- There are no remaining repository operations. A stale `VITE_API_URL` build
+  value is unreachable in archive mode and was deliberately left alone.
 
 ## What it is
-A live FIFA World Cup 2026 tracker, built to be exciting + understandable for soccer
-newcomers, in a retro Panini sticker-album look. React 18 + Vite SPA. Repo:
-`github.com/theonenonlyvj/Mundial26`. Current Hermes checkout used for the 2026-07-05
-mobile footer fix is `/home/alistar/work/Mundial26`; Vijay's older Mac-local path in
-prior notes was `/Users/vijayram/Cursor/mundial26`.
+A FIFA World Cup 2026 tracker, built to be exciting and understandable for
+soccer newcomers in a retro sticker-album look. It is a React 18 + Vite SPA,
+now frozen as a static final-results archive.
 
 ## Architecture (HISTORICAL — live-era, 2026-06-30 → 2026-07-21; backend now deleted)
 ```
 football-data.org (free tier, server-side key)
         ▼
-Cloudflare Worker "mundial26-data"   (account: theonenonlyvj)
+Cloudflare Worker "mundial26-data"
    ├─ scheduled cron "* * * * *": shouldRefresh? → fetch → normalize → write KV snapshot
    │                              + append every changed match to D1 log
    └─ fetch: serve /api/matches|standings|scorers|reference|health from KV; /api/log from D1
@@ -43,34 +40,25 @@ Cloudflare Worker "mundial26-data"   (account: theonenonlyvj)
 Render STATIC site "mundial26-app"  →  PUBLIC URL: https://mundial26-app.onrender.com
    └─ React SPA, VITE_API_URL = the Worker URL (baked at build); localizes time client-side
 ```
-- Worker URL: **https://mundial26-data.theonenonlyvj.workers.dev**
-- The OLD Render Express service **`mundial26-y28p`** is **ORPHANED** (nothing calls it).
-  Kept only as a rollback parachute. **Open task: retire it** (suspend → watch a live
-  match cycle → delete). Rollback if ever needed = set Render `mundial26-app` env
-  `VITE_API_URL` back to `https://mundial26-y28p.onrender.com` and redeploy.
+- The former Worker endpoint is retired and no longer part of the site.
+- The old Express service and the later Worker stack were both retired. They
+  are not rollback targets for the static archive.
 
 ## Cloudflare resources (HISTORICAL — all deleted 2026-07-21)
-- Worker: `mundial26-data` (wrangler v3; config `worker/wrangler.toml`).
-- KV namespace (live snapshot): binding `DATA`, id `ec901d6b56964e9499b00dea8c5f0dda`,
-  key `snapshot:v1`.
-- D1 database (log): binding `LOGDB`, name `mundial26-log`, id
-  `96d3c403-c678-479f-9e76-bc5011bc964d`, table `match_log` (schema `worker/schema.sql`).
-- Secret: `FOOTBALL_DATA_API_KEY` (set via `wrangler secret put`). The raw key is also in
-  the repo-root `.env` (gitignored) for local scripts.
+- Worker: `mundial26-data` (wrangler v3; historical config in `worker/wrangler.toml`).
+- KV binding: `DATA`, snapshot key `snapshot:v1`.
+- D1 binding: `LOGDB`, table `match_log` (schema `worker/schema.sql`).
+- Secret: `FOOTBALL_DATA_API_KEY`, deleted with the backend.
 - Cron trigger: `* * * * *` (every minute; no-ops when no game is in/near a window).
 
-## How to deploy / run
-- **Worker:** `cd worker && npx wrangler deploy` (requires `npx wrangler login` once;
-  Vijay's account is logged in on his Mac). Ignore the "update to wrangler v4" nag —
-  staying on v3 deliberately (v4 changes config format).
-- **SPA:** push to `main` → Render auto-deploys the static site (~1–2 min). `VITE_API_URL`
-  is a build-time env on the Render `mundial26-app` service.
-- **Tests/build:** root (SPA + worker library tests) = `npm test` and `npm run build`.
-  Worker-only deploy/test commands still run from `worker/`. As of 2026-07-05:
-  **174 root tests pass** and `npm run build` passes.
-- **Query the log:** `https://mundial26-data.theonenonlyvj.workers.dev/api/log?match=<id>&limit=N`
-  (JSON, newest first), or raw SQL:
-  `cd worker && npx wrangler d1 execute mundial26-log --remote --command "SELECT ..."`.
+## How to run and verify
+
+- Root SPA: `npm run dev`, `npm test`, and `npm run build`.
+- Historical worker library tests may be run locally from `worker/` with
+  `npm test`.
+- **Never run a Wrangler deployment command for this repository.** The Worker,
+  cron, KV, D1, and secret were deliberately deleted. The exported logs in
+  `docs/final-data/` replace remote log queries.
 
 ## Key files
 - `worker/src/snapshot.js` — `shouldRefresh` (gate: live window OR unsettled knockout ≤24h),
@@ -114,29 +102,43 @@ The hard month-end fights, all fixed + in git history:
    Verification: `npm test`, `npm run build`, and a 1320×2400 headless Chrome mobile
    measurement showed `spaceAfterFooter: 0`, `scrollHeight: 2400`, footer bottom `2400`.
 NOTE: NED–MAR's true result is **Morocco won 3-2 on pens** (per football-data, settled). A
-"Netherlands win 3-1" reading Vijay saw was a transient bad reading.
+"Netherlands win 3-1" reading reported during the event was a transient bad reading.
 
 ## Open threads / TODO — ALL CLOSED OR MOOT at archive (2026-07-21)
-- [x] ~~Retire `mundial26-y28p`~~ — deleted by Vijay 2026-07-01.
+- [x] ~~Retire `mundial26-y28p`~~ — deleted during the live-event cleanup.
 - [x] ET/Penalties question — answered by the archived log (`docs/final-data/match_log.json`):
       the feed does carry `duration` (the final logs as `EXTRA_TIME`).
 - [x] Everything else (cache-buster, Logs page, council backlog, Cards tab — see
       `docs/cards-feature-spike.md` on branch `maybe-penalties`) — moot; tournament over.
-- [ ] Human: delete dead `VITE_API_URL` env on Render; Workers-Paid downgrade decision (~Aug 13).
+- [x] `VITE_API_URL` cleanup deliberately skipped because archive mode makes it
+      unreachable; provider-plan decisions belong outside this repository.
 
-## Current operator expectations
-- Vijay/theonenonlyvj has active users on these apps. Only push high-confidence,
-  small, reversible commits after tests/build and a diff review.
-- Keep docs/notes updated enough for a fresh agent to continue without chat history.
+## Current maintainer expectations
 
-## Gotchas for the agent
-- **cwd resets between shell/tool calls** — always set the repo cwd explicitly. On this
-  Hermes host use `/home/alistar/work/Mundial26`; on Vijay's Mac use the older
-  `/Users/vijayram/Cursor/mundial26` path if that checkout is still present. Use
-  `worker/` only for Worker-specific deploy/test commands.
-- **A PreToolUse hook blocks writes/`/dev/null` redirects outside `/Cursor`** — don't use
-  `2>/dev/null`; write temp files into the session scratchpad or the repo.
-- **Don't re-read a subagent's raw `.output` transcript via shell** — it overflows context.
-- Run `npm`/`wrangler`/`vitest` from the right dir (root for SPA, `worker/` for the Worker).
-- The project memory file (auto-loaded each session) has the running narrative; this doc + the
-  blueprint are the durable, repo-versioned source of truth.
+- Keep changes small and reversible, and run tests/build before publication.
+- Keep the archive self-contained and update repo-native documentation when
+  architecture or verification changes.
+
+## Maintainer gotchas
+
+- Run SPA commands from the repository root and historical worker tests from
+  `worker/`.
+- Do not mistake historical live-era instructions in old plans for current
+  operations. The archive and blueprint are the durable sources of truth.
+
+## Post-archive corrections
+
+Two corrections to the "Remaining human tasks" / "Open threads" lines above.
+Both come from the tail of the archive session (2026-07-21), *after* this doc
+was last edited — so the list above overstates what is actually open.
+
+- **`VITE_API_URL` — closed, deliberately unchanged.** `src/api/client.js`
+  does still read `VITE_API_URL` into `BASE`, so the string is baked into the
+  bundle — but that fetch path is unreachable: every data call short-circuits
+  to the bundled archive inside `getJson` before touching the network, and the
+  Worker 404s anyway. Deleting the env var without a rebuild changes nothing
+  about the served site, and there is no reason to ever build again. The
+  earlier "provably backend-free" framing was hygiene, not a real task.
+- **Provider-plan decisions are outside this archived project.** The shared
+  account limit lesson remains reusable in `BLUEPRINT.md` §9, but no billing
+  or infrastructure action belongs in this repository.

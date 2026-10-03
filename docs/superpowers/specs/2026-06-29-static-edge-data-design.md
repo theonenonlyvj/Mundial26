@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-29
 **Status:** Design — awaiting review
-**Author:** Vijay + Claude
+**Project:** Mundial26
 
 ## 1. Problem
 
